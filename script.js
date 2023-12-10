@@ -161,7 +161,7 @@ const downArrow = '&#x25BC;'; // Unicode for downward-pointing triangle
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("Document loaded. Fetching crypto data...");
+    //console.log("Document loaded. Fetching crypto data...");
     fetchCryptoData();
 });
 
@@ -172,7 +172,7 @@ function fetchCryptoData() {
     fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
         .then(response => response.json())
         .then(apiData => {
-            console.log("API Response:", apiData);  // Log the entire API response
+            //console.log("API Response:", apiData);  // Log the entire API response
             calculateROI(apiData);
         })
         .catch(error => console.error('Error fetching data:', error));
