@@ -1,0 +1,281 @@
+body {
+    font-family: Inter, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    margin: 0;
+    padding: 0;
+    background-color:rgb(246, 246, 246);;
+    
+}
+
+h1 {
+    font-family: Inter, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 24px;
+    color: #333;
+    margin-top: 48px;
+    margin-bottom: 0;
+    margin-left: 48px;
+    
+    display: flex;
+    align-items: flex-start;
+}
+
+#homeParagraph{
+    margin: 8px 48px;
+    margin-bottom: 56px;
+    padding: 0;
+    max-width: 60ch;
+    display: flex;
+    align-items: flex-start;
+    justify-content: left;
+}
+
+
+
+#crypto-container {
+    display: flex;
+    overflow-x: auto; /* For horizontal scrolling */
+    margin-left: 48px;
+    margin-right: 48px;
+    padding: 24px;
+    background-color: white;
+    border-radius: 16px;
+    align-items: stretch; /* Add this line */
+}
+
+
+
+
+.table-fixed {
+    flex-shrink: 0; /* Prevents the fixed part from shrinking */
+}
+
+.table-scroll {
+    overflow-x: auto;
+    justify-content: space-between;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
+}
+
+table {
+    min-width: 100px; /* Set the width to 100% to fit the viewport */
+    
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent text wrapping within cells */
+}
+
+th, td {
+   
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    height: 40px;
+}
+
+td {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+
+th {
+    background-color: white;
+}
+
+/* Add this CSS for small screens (max-width: 600px) */
+/* Add this CSS for small screens (max-width: 600px) */
+/* Add this CSS for small screens (max-width: 600px) */
+@media screen and (max-width: 600px) {
+    #crypto-container {
+        display: flex;
+        overflow-x: auto; /* For horizontal scrolling */
+        margin-left: 0px;
+        margin-right: 0px;
+        padding: 16px;
+        background-color: white;
+        border-radius: 0px;
+    }
+
+    h1 {
+        font-family: Inter, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        font-size: 24px;
+        color: #333;
+        margin-top: 24px;
+        margin-bottom: 0;
+        margin-left: 16px;
+        
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    #homeParagraph{
+        margin: 8px 16px;
+        margin-bottom: 56px;
+        padding: 0;
+        max-width: 60ch;
+        display: flex;
+        align-items: flex-start;
+        justify-content: left;
+    }
+
+    table {
+        min-width: 100px; /* Set the width to 100% to fit the viewport */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        white-space: nowrap; /* Prevent text wrapping within cells */
+    }
+
+    th, td {
+        text-align: left ;
+        display: table-cell; /* Display as inline-block to allow horizontal scrolling */
+        vertical-align: top;
+        width: auto; /* Set the width to auto so that each column remains fixed */
+        height: 40px;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 10;
+    }
+
+    td {
+        padding: 8px;
+        margin-bottom: 2px; /* Add some space between rows */
+    }
+}
+
+
+
+
+@media screen and (min-width: 601px) {
+
+    
+    
+    table {
+        min-width: 100px; /* Set the width to 100% to fit the viewport */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        white-space: nowrap; /* Prevent text wrapping within cells */
+    }
+
+    th, td {
+        text-align: left ;
+        display: table-cell; /* Display as inline-block to allow horizontal scrolling */
+        vertical-align: top;
+        width: auto; /* Set the width to auto so that each column remains fixed */
+        height: 40px;
+    }
+
+    th {
+        position: static;
+        background-color: white;
+        z-index: 0;
+    }
+
+    td {
+        padding: 8px;
+        margin-bottom: 0; /* Reset margin for larger screens */
+    }
+
+    .table-fixed{
+        width:fit-content;
+    }
+
+     .table-scroll {
+        
+        width:fit-content;
+        display:flex ;
+        align-items: flex-end;
+        
+        /* ... other styles ... */
+    }
+    #crypto-container {
+        display: flex;
+        overflow-x: auto; /* For horizontal scrolling */
+        margin-left: 24px;
+        margin-right: 24px;
+        padding: 24px;
+        background-color: white;
+        border-radius: 16px;
+    }
+    .table-scroll table {
+        width: 100%; /* Set the table to take the full width of its container */
+    }
+    .table-scroll th, .table-scroll td {
+        min-width: 170px; /* Example minimum width */
+        width: auto; /* Adjust this as needed */
+    }
+    
+    
+}
+
+
+
+td img {
+    max-width: 30px;
+    margin-right: 8px;
+    height: auto;
+    border-radius: 50%; /* Optional: makes images circular */
+}
+
+#baseCaseRoi {
+    color: rgb(0, 168, 62);
+}
+
+
+
+.positive-roi {
+    color: rgb(0, 168, 62);
+}
+
+.negative-roi {
+    color: rgb(255, 58, 51);
+}
+
+.blur-content {
+    filter: blur(0px);
+}
+
+
+#num-animate {
+    transition: all 0.5s ease-in-out;
+    animation: fadeInOut 0.8s ease-in-out;
+}
+
+/* Keyframes for fade in and fade out */
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+  }
+  
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+    top: -5px;
+    left: 105%;
+  }
+  
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+
+  #caution{
+    
+    width: 24px;
+    height: 24px;
+    
+  }
