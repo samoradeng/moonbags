@@ -166,9 +166,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function fetchCryptoData() {
-    console.log("Fetching data from CoinGecko...");
+    //console.log("Fetching data from CoinGecko...");
     const ids = cryptoData.map(coin => coin.name).join(',');
-    console.log(`Requesting these IDs: ${ids}`);
+    //console.log(`Requesting these IDs: ${ids}`);
     fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
         .then(response => response.json())
         .then(apiData => {
@@ -257,8 +257,8 @@ setInterval(refreshData, 60000);
 function displayResult(coin, crypto, rank) {
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
     const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
-    console.log(document.getElementById('crypto-table-body-fixed')); // Check if this element is found
-    console.log(document.getElementById('crypto-table-body-scroll')); // Check if this element is found
+    //console.log(document.getElementById('crypto-table-body-fixed')); // Check if this element is found
+    //console.log(document.getElementById('crypto-table-body-scroll')); // Check if this element is found
     const row = document.createElement('tr');
 
     // Convert initialMarketCap to number for calculation
