@@ -26,6 +26,8 @@ h1 {
     display: flex;
     align-items: flex-start;
     justify-content: left;
+    font-size: 16px;
+    line-height: 130%;
 }
 
 
@@ -39,6 +41,7 @@ h1 {
     background-color: white;
     border-radius: 16px;
     align-items: stretch; /* Add this line */
+    
 }
 
 
@@ -52,6 +55,7 @@ h1 {
     overflow-x: auto;
     justify-content: space-between;
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
+    
 }
 
 table {
@@ -67,11 +71,15 @@ th, td {
     padding: 8px;
     border-bottom: 1px solid #ddd;
     height: 40px;
+    color: #3c4043;
 }
 
 td {
     padding-top: 16px;
     padding-bottom: 16px;
+    align-items: center;
+    vertical-align: middle; /* Aligns content in the middle of the cell */
+
 }
 
 
@@ -88,9 +96,11 @@ th {
         overflow-x: auto; /* For horizontal scrolling */
         margin-left: 0px;
         margin-right: 0px;
+        margin-bottom:64px;
         padding: 16px;
         background-color: white;
         border-radius: 0px;
+        overflow: hidden;
     }
 
     h1 {
@@ -119,12 +129,13 @@ th {
         min-width: 100px; /* Set the width to 100% to fit the viewport */
         overflow-x: auto; /* Enable horizontal scrolling */
         white-space: nowrap; /* Prevent text wrapping within cells */
+        overflow: hidden;
     }
 
     th, td {
         text-align: left ;
         display: table-cell; /* Display as inline-block to allow horizontal scrolling */
-        vertical-align: top;
+        vertical-align: middle;
         width: auto; /* Set the width to auto so that each column remains fixed */
         height: 40px;
     }
@@ -139,6 +150,28 @@ th {
     td {
         padding: 8px;
         margin-bottom: 2px; /* Add some space between rows */
+        vertical-align: middle; /* Aligns content in the middle of the cell */
+
+    }
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 300px; /* Adjust as needed */
+        background-color: white;
+        color: #3c4043;
+        text-align: left;
+        border-radius: 6px;
+        padding: 16px;
+        box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    
+        /* Position the tooltip */
+        position: absolute;
+        z-index: 100;
+        top: 100%;
+        left: 0%; /* Position above the icon */
+        margin-left: -100px; /* Centers the tooltip */
+        opacity: 0;
+        transition: opacity 0.3s;
     }
 }
 
@@ -158,9 +191,10 @@ th {
     th, td {
         text-align: left ;
         display: table-cell; /* Display as inline-block to allow horizontal scrolling */
-        vertical-align: top;
+        vertical-align: middle;
         width: auto; /* Set the width to auto so that each column remains fixed */
         height: 40px;
+        
     }
 
     th {
@@ -172,6 +206,8 @@ th {
     td {
         padding: 8px;
         margin-bottom: 0; /* Reset margin for larger screens */
+        vertical-align: middle; /* Aligns content in the middle of the cell */
+
     }
 
     .table-fixed{
@@ -189,11 +225,13 @@ th {
     #crypto-container {
         display: flex;
         overflow-x: auto; /* For horizontal scrolling */
-        margin-left: 24px;
-        margin-right: 24px;
+        margin-left: 48px;
+        margin-right: 48px;
+        margin-bottom:72px;
         padding: 24px;
         background-color: white;
         border-radius: 16px;
+        width: fit-content;
     }
     .table-scroll table {
         width: 100%; /* Set the table to take the full width of its container */
@@ -201,6 +239,38 @@ th {
     .table-scroll th, .table-scroll td {
         min-width: 170px; /* Example minimum width */
         width: auto; /* Adjust this as needed */
+    }
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 400px; /* Adjust as needed */
+        background-color: white;
+        color: #3c4043;
+        text-align: left;
+        border-radius: 6px;
+        padding: 16px;
+        box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    
+        /* Position the tooltip */
+        position: absolute;
+        z-index: 100;
+        top: 100%;
+        left: 50%; 
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        margin-top: 8px;
+    }
+    
+    .tooltip .tooltiptext::after {
+        content: '';
+        position: absolute;
+        bottom: 100%;  /* Position just above the tooltip */
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent white transparent;
     }
     
     
@@ -247,35 +317,44 @@ td img {
 
 
 
-.tooltip {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted black;
-  }
-  
-  .tooltip .tooltiptext {
-    visibility: hidden;
-    width: 120px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    
-    /* Position the tooltip */
-    position: absolute;
-    z-index: 1;
-    top: -5px;
-    left: 105%;
-  }
+
   
   .tooltip:hover .tooltiptext {
     visibility: visible;
   }
 
-  #caution{
-    
-    width: 24px;
+  #caution {
+    width: 17px;
+    height: 12px;
+    vertical-align:baseline; /* Aligns the image with the middle of the text */
+    margin-left: 4px; /* Optional: Adds some space between the icon and the text */
+}
+
+#homeParagraph span {
+    display: inline; /* Ensures the text and image are on the same line */
+}
+
+
+  
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer; /* Optional: Changes the cursor to indicate it's interactive */
+}
+
+
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+#crypto-table-body-fixed img {
+    vertical-align: middle; /* Aligns image to the middle of the cell */
+}
+
+
+#moonBags{
     height: 24px;
-    
-  }
+    width: auto;
+}
