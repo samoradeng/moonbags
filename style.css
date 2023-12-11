@@ -354,6 +354,26 @@ td img {
 }
 
 
+#website-link{
+    cursor: pointer;
+}
+
+a:link{
+    color: #333;
+    text-decoration: none;
+}
+a:visited{
+    color: #333;
+}
+a:hover{
+    color: #333;
+    text-decoration:underline;
+}
+
+a:active{
+    color: orange;
+}
+
 #moonBags{
     height: 24px;
     width: auto;
