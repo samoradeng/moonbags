@@ -354,6 +354,11 @@ td img {
 }
 
 
+#moonBags{
+    height: 24px;
+    width: auto;
+}
+
 #website-link{
     cursor: pointer;
 }
@@ -374,7 +379,44 @@ a:active{
     color: orange;
 }
 
-#moonBags{
-    height: 24px;
-    width: auto;
+
+
+
+
+.active-sort {
+    cursor: pointer;
 }
+
+/* CSS for non-active sorting headers on hover */
+#baseCaseRoiHeader:not(.active-sort):hover::after {
+    content: ' \25BC'; /* Unicode for downward-pointing triangle */
+    font-size: 12px; /* Adjust the size as needed */
+    margin-left: 4px; /* Space between header text and symbol */
+    cursor: pointer;
+}
+#moonCaseRoiHeader:not(.active-sort):hover::after {
+    content: ' \25BC'; /* Unicode for downward-pointing triangle */
+    font-size: 12px; /* Adjust the size as needed */
+    margin-left: 4px; /* Space between header text and symbol */
+    
+}
+#moonCaseRoiHeader,
+#baseCaseRoiHeader,
+#roiSinceHeader{
+    cursor: pointer;
+}
+#roiSinceHeader:not(.active-sort):hover::after {
+    content: ' \25BC'; /* Unicode for downward-pointing triangle */
+    font-size: 12px; /* Adjust the size as needed */
+    margin-left: 4px; /* Space between header text and symbol */
+    cursor: pointer;
+}
+
+/* CSS for active sorting headers */
+.active-sort::after {
+    content: attr(data-symbol); /* Use the data-symbol attribute to set the symbol */
+    font-size: 12px; /* Adjust the size as needed */
+    margin-left: 4px; /* Space between header text and symbol */
+    
+}
+
