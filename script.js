@@ -159,64 +159,191 @@ const cryptoData = [
 const upArrow = '&#x25B2;'; // Unicode for upward-pointing triangle
 const downArrow = '&#x25BC;'; // Unicode for downward-pointing triangle
 
+let isRoiSinceDescending = true;
+let isMoonCaseRoiDescending = true; // Global variable to track sorting order
+let isBaseCaseRoiDescending = true; // Global variable to track sorting order for Base Case ROI
+let globalApiData = []; // Global variable to store API data
+
+
+
+
 
 document.addEventListener('DOMContentLoaded', function () {
-    //console.log("Document loaded. Fetching crypto data...");
-    fetchCryptoData();
+    fetchCryptoData(); // Fetch data once on page load
+
+    document.getElementById('roiSinceHeader').addEventListener('click', function() {
+        toggleRoiSinceSorting();
+    });
+
+    // mooncaseROI
+    document.getElementById('moonCaseRoiHeader').addEventListener('click', function() {
+        toggleMoonCaseRoiSorting();
+    });
+
+    // basecaseROI
+    document.getElementById('baseCaseRoiHeader').addEventListener('click', function() {
+        toggleBaseCaseRoiSorting();
+    });
+    
 });
 
+// Toggle sorting and update display, but don't fetch new data
+function toggleRoiSinceSorting() {
+    isRoiSinceDescending = !isRoiSinceDescending;
+    currentSortCriterion = 'roiSince';
+    updateCarrotSymbol();
+    displaySortedResults(); // Update display with current data
+}
+
+//mooncasesorting
+function toggleMoonCaseRoiSorting() {
+    isMoonCaseRoiDescending = !isMoonCaseRoiDescending;
+    currentSortCriterion = 'moonCaseROI';
+    updateCarrotSymbol();
+    displaySortedResults(); // Update display with current data
+    
+}
+
+//basecasesorting
+function toggleBaseCaseRoiSorting() {
+    isBaseCaseRoiDescending = !isBaseCaseRoiDescending;
+    currentSortCriterion = 'baseCaseROI';
+    updateCarrotSymbol();
+    displaySortedResults(); // Update display with current data
+}
+
+
+function updateCarrotSymbol() {
+    // Reset headers to default (without carrot symbols)
+    document.getElementById('roiSinceHeader').innerHTML = 'ROI Since (12.5.23)';
+    document.getElementById('moonCaseRoiHeader').innerHTML = 'Moon Case ROI';
+    document.getElementById('baseCaseRoiHeader').innerHTML = 'Base Case ROI';
+
+    // Set data-symbol attribute for active sorting criterion
+    if (currentSortCriterion === 'roiSince') {
+        document.getElementById('roiSinceHeader').setAttribute('data-symbol', isRoiSinceDescending ? '\u25BC' : '\u25B2');
+    } else if (currentSortCriterion === 'moonCaseROI') {
+        document.getElementById('moonCaseRoiHeader').setAttribute('data-symbol', isMoonCaseRoiDescending ? '\u25BC' : '\u25B2');
+    } else if (currentSortCriterion === 'baseCaseROI') {
+        document.getElementById('baseCaseRoiHeader').setAttribute('data-symbol', isBaseCaseRoiDescending ? '\u25BC' : '\u25B2');
+    }
+
+    
+
+    // Remove 'active-sort' class from all headers
+document.querySelectorAll('.sortable-header').forEach(header => header.classList.remove('active-sort'));
+
+// Add 'active-sort' class to the active sorting header
+if (currentSortCriterion === 'roiSince') {
+    document.getElementById('roiSinceHeader').classList.add('active-sort');
+} else if (currentSortCriterion === 'moonCaseROI') {
+    document.getElementById('moonCaseRoiHeader').classList.add('active-sort');
+} else if (currentSortCriterion === 'baseCaseROI') {
+    document.getElementById('baseCaseRoiHeader').classList.add('active-sort');
+}
+
+}
+
+
+
+
+let lastFetchTime = 0;
+const fetchInterval = 30000; // 30 seconds
+
+// Fetch data only once on page load, not every time the header is clicked
 function fetchCryptoData() {
-    //console.log("Fetching data from CoinGecko...");
     const ids = cryptoData.map(coin => coin.name).join(',');
-    //console.log(`Requesting these IDs: ${ids}`);
     fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
         .then(response => response.json())
         .then(apiData => {
-            //console.log("API Response:", apiData);  // Log the entire API response
-            calculateROI(apiData);
+            globalApiData = apiData; // Store fetched data globally
+            processApiData();
         })
         .catch(error => console.error('Error fetching data:', error));
 }
 
+function processApiData() {
+    calculateROI();
+    displaySortedResults(); // Use global variable for data
+}
 
-function calculateROI(apiData) {
+
+function calculateROI() {
     cryptoData.forEach(coin => {
-        const apiCoin = apiData.find(c => c.symbol === coin.symbol.toLowerCase());
+        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
         if (apiCoin) {
             let currentMcap = apiCoin.market_cap;
             if (currentMcap === 0 && coin.circulatingSupply) {
-                // Ensure circulatingSupply is a number
                 const circulatingSupply = convertSupplyToNumber(coin.circulatingSupply);
                 currentMcap = apiCoin.current_price * circulatingSupply;
-                apiCoin.market_cap = currentMcap; // Update market cap in apiCoin
+                apiCoin.market_cap = currentMcap;
             }
 
             const baseCaseMcap = convertToNumber(coin.baseCaseMcap);
             const roiBaseCase = baseCaseMcap / currentMcap;
-            coin.calculatedBaseROI = Math.round(roiBaseCase); // Store calculated ROI
+            coin.calculatedBaseROI = Math.round(roiBaseCase);
+            coin.calculatedRoiSince = calculateRoiSince(coin);
+
+            // Calculate Moon Case ROI
+            const moonCaseMcap = convertToNumber(coin.moonCaseMcap);
+            const roiMoonCase = moonCaseMcap / currentMcap;
+            coin.calculatedMoonROI = Math.round(roiMoonCase);
         }
     });
-
-    // Sort and display results
-    displaySortedResults(apiData);
 }
 
-function displaySortedResults(apiData) {
-    // Clear previous results
-    const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
-    tableBodyScroll.innerHTML = '';
-    // Sort the cryptoData array based on the calculated Base Case ROI
-    cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
+function calculateRoiSince(coin) {
+    const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
+    if (apiCoin) {
+        const initialMarketCap = convertToNumber(coin.initialMarketCap);
+        const currentMarketCap = apiCoin.market_cap;
+        if (initialMarketCap > 0) {
+            const roiSince = (currentMarketCap - initialMarketCap) / initialMarketCap;
+            return roiSince;
+        }
+    }
+    return 0;
+}
 
-    // Clear previous results
-    const tableBody = document.getElementById('crypto-table-body-fixed' );
-    tableBody.innerHTML = '';
+let currentSortCriterion = 'baseCaseROI'; // Default sorting criterion
+
+
+function displaySortedResults(apiData) {
+    
+    // Clear previous results in both table bodies
+    const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
+    const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
+    tableBodyFixed.innerHTML = '';
+    tableBodyScroll.innerHTML = '';
+
+    // Determine sorting criterion and sort the cryptoData array accordingly
+    if (currentSortCriterion === 'baseCaseROI') {
+        cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
+    } else if (currentSortCriterion === 'roiSince') {
+        if (isRoiSinceDescending) {
+            cryptoData.sort((a, b) => b.calculatedRoiSince - a.calculatedRoiSince);
+        } else {
+            cryptoData.sort((a, b) => a.calculatedRoiSince - b.calculatedRoiSince);
+        }
+    } else if (currentSortCriterion === 'moonCaseROI') {
+        if (isMoonCaseRoiDescending) {
+            cryptoData.sort((a, b) => b.calculatedMoonROI - a.calculatedMoonROI);
+        } else {
+            cryptoData.sort((a, b) => a.calculatedMoonROI - b.calculatedMoonROI);
+        }
+    } if (currentSortCriterion === 'baseCaseROI') {
+        if (isBaseCaseRoiDescending) {
+            cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
+        } else {
+            cryptoData.sort((a, b) => a.calculatedBaseROI - b.calculatedBaseROI);
+        }
+    }
 
     // Display the sorted results
     cryptoData.forEach((coin, index) => {
-        const apiCoin = apiData.find(c => c.symbol === coin.symbol.toLowerCase());
+        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
         if (apiCoin) {
-            displayResult(apiCoin, coin, index + 1); // Pass the ranking number
+            displayResult(apiCoin, coin, index + 1);
         }
     });
 }
@@ -255,7 +382,10 @@ function refreshData() {
 }
 
 // Call refreshData() every 30 seconds
-setInterval(refreshData, 60000);
+setInterval(() => {
+    lastFetchTime = 0; // Reset last fetch time every 30 seconds
+    fetchCryptoData();
+}, fetchInterval);
 
 function displayResult(coin, crypto, rank) {
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
@@ -309,5 +439,3 @@ function displayResult(coin, crypto, rank) {
     `;
     tableBodyScroll.appendChild(rowScroll);
 }
-
-
