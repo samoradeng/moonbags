@@ -1,25 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-W34FQPE6SJ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-W34FQPE6SJ');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cryptocurrency Hidden Gems</title>
+    <title>Crypto Moon 💰</title>
     <link rel="icon" href="/images/moonBag.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>moonbags 💰 </h1>
     <p id="homeParagraph">
-        <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions done by Tokenmetrics. This is not financial advice from me or Tokenmetrics, I just made an easy way for me to keep track of these coins. Started Dec 5, 2023.
+        <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions provided by Tokenmetrics. This is not financial advice from me or Tokenmetrics, just an easy way for me to keep track of these coins. Started Dec 5, 2023.
             <span class="tooltip">
                 <img id="caution" src="/images/Caution-Grey.svg" alt="Caution">
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
@@ -35,8 +26,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Name</th>
+                        <th class="sortable-header" data-sort-key="rank">#</th>
+                        <th class="sortable-header" data-sort-key="name">Name</th>
                     </tr>
                 </thead>
                 <tbody id="crypto-table-body-fixed">
@@ -49,12 +40,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Current Market Cap</th>
-                        <th>Base Case MC</th>
-                        <th>Base Case ROI</th>
-                        <th>Moon Case MC</th>
-                        <th>Moon Case ROI</th>
-                        <th>ROI Since (12.5.23)</th>
+                        <th class="sortable-header" data-sort-key="currentMarketCap">Current Market Cap</th>
+                        <th class="sortable-header" data-sort-key="baseCaseMcap">Base Case MC</th>
+                        <th class="sortable-header" data-sort-key="baseCaseROI" id="baseCaseRoiHeader">Base Case ROI</th>
+                        <th class="sortable-header" data-sort-key="moonCaseMcap">Moon Case MC</th>
+                        <th class="sortable-header" data-sort-key="moonCaseROI" id="moonCaseRoiHeader">Moon Case ROI</th>
+                        <th class="sortable-header" data-sort-key="roiSince" id="roiSinceHeader">ROI Since (12.5.23)</th>
+
                     </tr>
                 </thead>
                 <tbody id="crypto-table-body-scroll">
