@@ -367,7 +367,7 @@ a:link{
     color: #333;
     text-decoration: none;
     font-weight: bold;
-
+    
 }
 a:visited{
     color: #333;
@@ -402,9 +402,17 @@ a:active{
     margin-left: 4px; /* Space between header text and symbol */
     
 }
+#currentMarketCapHeader:not(.active-sort):hover::after {
+    content: ' \25BC'; /* Unicode for downward-pointing triangle */
+    font-size: 12px; /* Adjust the size as needed */
+    margin-left: 4px; /* Space between header text and symbol */
+    
+}
+
 #moonCaseRoiHeader,
 #baseCaseRoiHeader,
-#roiSinceHeader{
+#roiSinceHeader,
+#currentMarketCapHeader{
     cursor: pointer;
 }
 #roiSinceHeader:not(.active-sort):hover::after {
