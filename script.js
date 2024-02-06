@@ -162,6 +162,7 @@ const downArrow = '&#x25BC;'; // Unicode for downward-pointing triangle
 let isRoiSinceDescending = true;
 let isMoonCaseRoiDescending = true; // Global variable to track sorting order
 let isBaseCaseRoiDescending = true; // Global variable to track sorting order for Base Case ROI
+let isCurrentMarketCapDescending = true; // Variable to track sorting order
 let globalApiData = []; // Global variable to store API data
 
 
@@ -169,7 +170,7 @@ let globalApiData = []; // Global variable to store API data
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    fetchCryptoData(); // Fetch data once on page load
+    fetchCryptoData(); // FetccurrentMarketCapHeadercurrentMarketCapHeader data once on page load
 
     document.getElementById('roiSinceHeader').addEventListener('click', function() {
         toggleRoiSinceSorting();
@@ -184,6 +185,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('baseCaseRoiHeader').addEventListener('click', function() {
         toggleBaseCaseRoiSorting();
     });
+
+    // current Market Cap
+    document.getElementById('currentMarketCapHeader').addEventListener('click', function() {
+        toggleCurrentMarketCapSorting();
+    });
+    
     
 });
 
@@ -212,12 +219,22 @@ function toggleBaseCaseRoiSorting() {
     displaySortedResults(); // Update display with current data
 }
 
+//currentmarketcapsorting
+function toggleCurrentMarketCapSorting() {
+    isCurrentMarketCapDescending = !isCurrentMarketCapDescending;
+    currentSortCriterion = 'currentMarketCap';
+    updateCarrotSymbol();
+    displaySortedResults(); // Update display with current data
+}
+
+
 
 function updateCarrotSymbol() {
     // Reset headers to default (without carrot symbols)
     document.getElementById('roiSinceHeader').innerHTML = 'ROI Since (12.5.23)';
     document.getElementById('moonCaseRoiHeader').innerHTML = 'Moon Case ROI';
     document.getElementById('baseCaseRoiHeader').innerHTML = 'Base Case ROI';
+    document.getElementById('currentMarketCapHeader').innerHTML = 'Current Market Cap';
 
     // Set data-symbol attribute for active sorting criterion
     if (currentSortCriterion === 'roiSince') {
@@ -226,6 +243,8 @@ function updateCarrotSymbol() {
         document.getElementById('moonCaseRoiHeader').setAttribute('data-symbol', isMoonCaseRoiDescending ? '\u25BC' : '\u25B2');
     } else if (currentSortCriterion === 'baseCaseROI') {
         document.getElementById('baseCaseRoiHeader').setAttribute('data-symbol', isBaseCaseRoiDescending ? '\u25BC' : '\u25B2');
+    } else if (currentSortCriterion === 'currentMarketCap') {
+        document.getElementById('currentMarketCapHeader').setAttribute('data-symbol', isCurrentMarketCapDescending ? '\u25BC' : '\u25B2');
     }
 
     
@@ -240,6 +259,8 @@ if (currentSortCriterion === 'roiSince') {
     document.getElementById('moonCaseRoiHeader').classList.add('active-sort');
 } else if (currentSortCriterion === 'baseCaseROI') {
     document.getElementById('baseCaseRoiHeader').classList.add('active-sort');
+} else if (currentSortCriterion === 'currentMarketCap') {
+    document.getElementById('currentMarketCapHeader').classList.add('active-sort');
 }
 
 }
@@ -337,7 +358,14 @@ function displaySortedResults(apiData) {
         } else {
             cryptoData.sort((a, b) => a.calculatedBaseROI - b.calculatedBaseROI);
         }
+    } if (currentSortCriterion === 'currentMarketCap') {
+        cryptoData.sort((a, b) => {
+            const marketCapA = globalApiData.find(c => c.symbol === a.symbol.toLowerCase())?.market_cap || 0;
+            const marketCapB = globalApiData.find(c => c.symbol === b.symbol.toLowerCase())?.market_cap || 0;
+            return isCurrentMarketCapDescending ? marketCapB - marketCapA : marketCapA - marketCapB;
+        });
     }
+    
 
     // Display the sorted results
     cryptoData.forEach((coin, index) => {
