@@ -4,11 +4,14 @@ const cryptoData = [
         "symbol": "ml", // Symbol for Mintlayer
         "baseCaseMcap": "1.7B",
         "baseRank": "Top 170",
+        "baseCase":"180",
         "moonCaseMcap": "7B",
         "moonRank": "Top 60",
+        "moonCase": "700",
         "tech": "89%",
         "circulatingSupply": "61,540,000",
         "initialMarketCap": "9.6M",
+        "initialPrice": "0.170844", // Price of Mintlayer on December 5, 2023
 
     },
     {
@@ -16,142 +19,184 @@ const cryptoData = [
         "symbol": "next", // Symbol for Connext
         "baseCaseMcap": "3.1B",
         "baseRank": "Top 115",
+        "baseCase":"160",
         "moonCaseMcap": "15.5B",
         "moonRank": "Top 35",
+        "moonCase": "800",
         "tech": "87%",
         "initialMarketCap": "19M",
+        "initialPrice": "0.175146", // Price of connext on December 5, 2023
     },
     {
         "name": "hivemapper",
         "symbol": "honey", // Symbol for hivemapper
         "baseCaseMcap": "3.3B",
         "baseRank": "Top 105",
+        "baseCase":"145",
         "moonCaseMcap": "22.4B",
         "moonRank": "Top 25",
+        "moonCase": "1000",
         "tech": "78%",
         "initialMarketCap": "23M",
+        "initialPrice": "0.102578", // Price of hivemapper on December 5, 2023
     },
     {
         "name": "gameswift",
         "symbol": "gswift", // Symbol for gameswift
         "baseCaseMcap": "2.7B",
         "baseRank": "Top 130",
+        "baseCase":"110",
         "moonCaseMcap": "13.3B",
         "moonRank": "Top 35",
+        "moonCase": "535",
         "tech": "87%",
         "initialMarketCap": "25M",
+        "initialPrice": "0.454479", // Price of gameswift on December 5, 2023
     },
     {
         "name": "dimo",
         "symbol": "dimo", // Symbol for dimo
         "baseCaseMcap": "1.9B",
-        "baseRank": "Top 160",
+        "baseRank": "Top 100",
+        "baseCase":"180",
         "moonCaseMcap": "7.7B",
         "moonRank": "Top 60",
+        "moonCase": "400",
         "tech": "89%",
         "initialMarketCap": "19M",
+        "initialPrice": "0.123358", // Price of dimo on December 5, 2023
     },
     {
         "name": "alephium",
         "symbol": "alph", // Symbol for alephium
         "baseCaseMcap": "3.1B",
         "baseRank": "Top 110",
+        "baseCase":"90",
         "moonCaseMcap": "21B",
         "moonRank": "Top 25",
+        "moonCase": "580",
         "tech": "85%",
         "initialMarketCap": "37M",
+        "initialPrice": "0.611323", // Price of alephium on December 5, 2023
     },
     {
         "name": "swarm-markets",
         "symbol": "smt", // Symbol for swarmmarkets
         "baseCaseMcap": "1.2B",
         "baseRank": "Top 215",
+        "baseCase":"70",
         "moonCaseMcap": "6.1B",
         "moonRank": "Top 65",
+        "moonCase": "360",
         "tech": "87%",
         "initialMarketCap": "17M",
+        "initialPrice": "0.278039", // Price of swarm-markets on December 5, 2023
     },
     {
         "name": "iron-fish",
         "symbol": "iron", // Symbol for ironfish
         "baseCaseMcap": "1.7B",
         "baseRank": "Top 180",
+        "baseCase":"70",
         "moonCaseMcap": "17B",
         "moonRank": "Top 30",
+        "moonCase": "660",
         "tech": "81%",
         "circulatingSupply": "18,240,120",
         "initialMarketCap": "25M",
+        "initialPrice": "1.41", // Price of iron-fish on December 5, 2023
     },
     {
         "name": "astra-dao-2",
         "symbol": "astradao", // Symbol for astradao
         "baseCaseMcap": "330M",
         "baseRank": "Top 500",
+        "baseCase":"60",
         "moonCaseMcap": "1.6B",
         "moonRank": "Top 180",
+        "moonCase": "285",
         "tech": "81%",
         "initialMarketCap": "6M",
+        "initialPrice": "0.000000070043", // Price of astradao on December 5, 2023
     },
     {
         "name": "suipad",
         "symbol": "suip", // Symbol for suipad
         "baseCaseMcap": "90M",
         "baseRank": "Top 1000",
+        "baseCase":"45",
         "moonCaseMcap": "350M",
         "moonRank": "Top 500",
+        "moonCase": "180",
         "tech": "N/A",
         "initialMarketCap": "2M",
+        "initialPrice": "0.04230363", // Price of suipad on December 5, 2023
     },
     {
         "name": "nexacoin",
         "symbol": "nexa", // Symbol for nexa
         "baseCaseMcap": "2.1B",
         "baseRank": "Top 150",
+        "baseCase":"40",
         "moonCaseMcap": "21B",
         "moonRank": "Top 25",
+        "moonCase": "370",
         "tech": "N/A",
         "initialMarketCap": "57M",
+        "initialPrice": "0.00001374", // Price of nexacoin on December 5, 2023
     },
     {
         "name": "nolus",
         "symbol": "nls", // Symbol for nolus
         "baseCaseMcap": "240M",
         "baseRank": "Top 600",
+        "baseCase":"35",
         "moonCaseMcap": "2.4B",
         "moonRank": "Top 130",
+        "moonCase": "360",
         "tech": "81%",
         "initialMarketCap": "7M",
+        "initialPrice": "0.050746", // Price of nolus on December 5, 2023
     },
     {
         "name": "taraxa",
         "symbol": "tara", // Symbol for taxara
         "baseCaseMcap": "1.5B",
         "baseRank": "Top 160",
+        "baseCase":"25",
         "moonCaseMcap": "15B",
         "moonRank": "Top 30",
+        "moonCase": "250",
         "tech": "81%",
         "initialMarketCap": "61M",
+        "initialPrice": "0.01779119", // Price of taraxa on December 5, 2023
     },
     {
         "name": "joystream",
         "symbol": "joy", // Symbol for joystream
         "baseCaseMcap": "830M",
         "baseRank": "Top 300",
+        "baseCase":"25",
         "moonCaseMcap": "5.5B",
         "moonRank": "Top 70",
+        "moonCase": "150",
         "tech": "85%",
         "circulatingSupply": "759,809,168",
         "initialMarketCap": "37M",
+        "initialPrice": "0.04841677", // Price of joystream on December 5, 2023
     },
     {
         "name": "celer-network",
-        "symbol": "celr", // Symbol for joystream
+        "symbol": "celr", // Symbol for celer
         "baseCaseMcap": "2B",
         "baseRank": "Top 150",
+        "baseCase":"20",
         "moonCaseMcap": "20B",
         "moonRank": "Top 25",
+        "moonCase": "200",
         "tech": "85%",
         "initialMarketCap": "93M",
+        "initialPrice": "0.01660950", // Price of celer-network on December 5, 2023
     },
 
 ];
@@ -228,6 +273,22 @@ function toggleCurrentMarketCapSorting() {
 }
 
 
+// Toggle sorting for Base Case ROI
+function toggleBaseCaseRoiSorting() {
+    isBaseCaseRoiDescending = !isBaseCaseRoiDescending;
+    currentSortCriterion = 'baseCaseROI'; // You might want to change this to match the property used in sorting
+    updateCarrotSymbol();
+    displaySortedResults();
+}
+
+// Toggle sorting for Moon Case ROI
+function toggleMoonCaseRoiSorting() {
+    isMoonCaseRoiDescending = !isMoonCaseRoiDescending;
+    currentSortCriterion = 'moonCaseROI'; // You might want to change this to match the property used in sorting
+    updateCarrotSymbol();
+    displaySortedResults();
+}
+
 
 function updateCarrotSymbol() {
     // Reset headers to default (without carrot symbols)
@@ -289,92 +350,93 @@ function processApiData() {
 }
 
 
+
+
 function calculateROI() {
     cryptoData.forEach(coin => {
         const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
         if (apiCoin) {
-            let currentMcap = apiCoin.market_cap;
-            if (currentMcap === 0 && coin.circulatingSupply) {
-                const circulatingSupply = convertSupplyToNumber(coin.circulatingSupply);
-                currentMcap = apiCoin.current_price * circulatingSupply;
-                apiCoin.market_cap = currentMcap;
-            }
+            const currentPrice = apiCoin.current_price;
+            const initialPrice = parseFloat(coin.initialPrice);
+            const baseCaseMultiplier = parseFloat(coin.baseCase);
+            const moonCaseMultiplier = parseFloat(coin.moonCase);
 
-            const baseCaseMcap = convertToNumber(coin.baseCaseMcap);
-            const roiBaseCase = baseCaseMcap / currentMcap;
-            coin.calculatedBaseROI = Math.round(roiBaseCase);
-            coin.calculatedRoiSince = calculateRoiSince(coin);
+            // ROI since initial price to current price
+            coin.calculatedRoiSince = initialPrice > 0 ? (currentPrice - initialPrice) / initialPrice : 0;
 
-            // Calculate Moon Case ROI
-            const moonCaseMcap = convertToNumber(coin.moonCaseMcap);
-            const roiMoonCase = moonCaseMcap / currentMcap;
-            coin.calculatedMoonROI = Math.round(roiMoonCase);
+            // Future growth potential to reach base and moon case targets
+            coin.remainingBaseCaseMultiplier = baseCaseMultiplier / (1 + coin.calculatedRoiSince);
+            coin.remainingMoonCaseMultiplier = moonCaseMultiplier / (1 + coin.calculatedRoiSince);
         }
     });
 }
 
-function calculateRoiSince(coin) {
-    const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
-    if (apiCoin) {
-        const initialMarketCap = convertToNumber(coin.initialMarketCap);
-        const currentMarketCap = apiCoin.market_cap;
-        if (initialMarketCap > 0) {
-            const roiSince = (currentMarketCap - initialMarketCap) / initialMarketCap;
-            return roiSince;
-        }
+
+
+
+function calculateRoiSince(coin, currentPrice) {
+    const initialPrice = parseFloat(coin.initialPrice);
+    if (initialPrice && currentPrice) {
+        const roiSince = (currentPrice - initialPrice) / initialPrice;
+        return roiSince;
     }
     return 0;
 }
 
+
+
+
 let currentSortCriterion = 'baseCaseROI'; // Default sorting criterion
 
 
-function displaySortedResults(apiData) {
-    
+function displaySortedResults() {
     // Clear previous results in both table bodies
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
     const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
     tableBodyFixed.innerHTML = '';
     tableBodyScroll.innerHTML = '';
 
-    // Determine sorting criterion and sort the cryptoData array accordingly
-    if (currentSortCriterion === 'baseCaseROI') {
-        cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
-    } else if (currentSortCriterion === 'roiSince') {
-        if (isRoiSinceDescending) {
-            cryptoData.sort((a, b) => b.calculatedRoiSince - a.calculatedRoiSince);
-        } else {
-            cryptoData.sort((a, b) => a.calculatedRoiSince - b.calculatedRoiSince);
+    // Clone to avoid mutating the original array
+    let sortedData = [...cryptoData]; 
+
+    sortedData.sort((a, b) => {
+        let aCoin = globalApiData.find(c => c.symbol === a.symbol.toLowerCase());
+        let bCoin = globalApiData.find(c => c.symbol === b.symbol.toLowerCase());
+        let aMarketCap = aCoin ? aCoin.market_cap : 0;
+        let bMarketCap = bCoin ? bCoin.market_cap : 0;
+
+        switch (currentSortCriterion) {
+            case 'baseCaseROI':
+                return isBaseCaseRoiDescending ? 
+                    b.remainingBaseCaseMultiplier - a.remainingBaseCaseMultiplier :
+                    a.remainingBaseCaseMultiplier - b.remainingBaseCaseMultiplier;
+            case 'moonCaseROI':
+                return isMoonCaseRoiDescending ? 
+                    b.remainingMoonCaseMultiplier - a.remainingMoonCaseMultiplier :
+                    a.remainingMoonCaseMultiplier - b.remainingMoonCaseMultiplier;
+            case 'roiSince':
+                return isRoiSinceDescending ?
+                    b.calculatedRoiSince - a.calculatedRoiSince :
+                    a.calculatedRoiSince - b.calculatedRoiSince;
+            case 'currentMarketCap':
+                return isCurrentMarketCapDescending ?
+                    bMarketCap - aMarketCap :
+                    aMarketCap - bMarketCap;
+            default:
+                return 0;
         }
-    } else if (currentSortCriterion === 'moonCaseROI') {
-        if (isMoonCaseRoiDescending) {
-            cryptoData.sort((a, b) => b.calculatedMoonROI - a.calculatedMoonROI);
-        } else {
-            cryptoData.sort((a, b) => a.calculatedMoonROI - b.calculatedMoonROI);
-        }
-    } if (currentSortCriterion === 'baseCaseROI') {
-        if (isBaseCaseRoiDescending) {
-            cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
-        } else {
-            cryptoData.sort((a, b) => a.calculatedBaseROI - b.calculatedBaseROI);
-        }
-    } if (currentSortCriterion === 'currentMarketCap') {
-        cryptoData.sort((a, b) => {
-            const marketCapA = globalApiData.find(c => c.symbol === a.symbol.toLowerCase())?.market_cap || 0;
-            const marketCapB = globalApiData.find(c => c.symbol === b.symbol.toLowerCase())?.market_cap || 0;
-            return isCurrentMarketCapDescending ? marketCapB - marketCapA : marketCapA - marketCapB;
-        });
-    }
-    
+    });
 
     // Display the sorted results
-    cryptoData.forEach((coin, index) => {
+    sortedData.forEach((coin, index) => {
         const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
         if (apiCoin) {
             displayResult(apiCoin, coin, index + 1);
         }
     });
 }
+
+
 
 function convertSupplyToNumber(supply) {
     if (!supply) return 0;
@@ -422,15 +484,18 @@ function displayResult(coin, crypto, rank) {
     //console.log(document.getElementById('crypto-table-body-scroll')); // Check if this element is found
     const row = document.createElement('tr');
 
+    // Use the calculated remaining growth for display
+    const remainingBaseGrowth = crypto.remainingBaseCaseGrowth;
+    const remainingMoonGrowth = crypto.remainingMoonCaseGrowth;
+
     // Convert initialMarketCap to number for calculation
     const initialMarketCap = convertToNumber(crypto.initialMarketCap);
     const currentMarketCap = coin.market_cap;
 
-    // Calculate ROI to Date
-    let roiToDate = 0;
-    if (initialMarketCap > 0) {
-        roiToDate = (currentMarketCap / initialMarketCap) - 1; // ROI in decimal form
-    }
+    const currentPrice = coin.current_price; // Assume this is the current price from the API
+    const roiToDate = crypto.calculatedRoiSince; 
+
+
 
     // Determine the class and arrow symbol based on ROI to Date
     let roiSymbol = '';
@@ -460,10 +525,10 @@ function displayResult(coin, crypto, rank) {
     rowScroll.innerHTML = `
         <td class="${isContentBlurred ? 'blur-content' : ''}">$${coin.market_cap.toLocaleString()}</td>
         <td>$${crypto.baseCaseMcap} (${crypto.baseRank})</td>
-        <td>${crypto.calculatedBaseROI}x</td>
+        <td>${crypto.remainingBaseCaseMultiplier.toFixed(0)}x</td> <!-- Display Base Case Multiplier -->
         <td>$${crypto.moonCaseMcap} (${crypto.moonRank})</td>
-        <td>${Math.round(convertToNumber(crypto.moonCaseMcap) / currentMarketCap)}x</td>
-        <td class="${roiClass}">${roiSymbol} ${(Math.abs(roiToDate) * 100).toFixed(2)}%</td>
+        <td>${crypto.remainingMoonCaseMultiplier.toFixed(0)}x</td> <!-- Display Moon Case Multiplier -->
+        <td class="${roiClass}">${roiSymbol} ${(Math.abs(roiToDate) * 100).toFixed(1)}%</td>
     `;
     tableBodyScroll.appendChild(rowScroll);
 }
