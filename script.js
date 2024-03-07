@@ -273,22 +273,6 @@ function toggleCurrentMarketCapSorting() {
 }
 
 
-// Toggle sorting for Base Case ROI
-function toggleBaseCaseRoiSorting() {
-    isBaseCaseRoiDescending = !isBaseCaseRoiDescending;
-    currentSortCriterion = 'baseCaseROI'; // You might want to change this to match the property used in sorting
-    updateCarrotSymbol();
-    displaySortedResults();
-}
-
-// Toggle sorting for Moon Case ROI
-function toggleMoonCaseRoiSorting() {
-    isMoonCaseRoiDescending = !isMoonCaseRoiDescending;
-    currentSortCriterion = 'moonCaseROI'; // You might want to change this to match the property used in sorting
-    updateCarrotSymbol();
-    displaySortedResults();
-}
-
 
 function updateCarrotSymbol() {
     // Reset headers to default (without carrot symbols)
@@ -356,22 +340,28 @@ function calculateROI() {
     cryptoData.forEach(coin => {
         const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
         if (apiCoin) {
-            const currentPrice = apiCoin.current_price;
-            const initialPrice = parseFloat(coin.initialPrice);
-            const baseCaseMultiplier = parseFloat(coin.baseCase);
-            const moonCaseMultiplier = parseFloat(coin.moonCase);
+            let currentMcap;
+            const currentPrice = apiCoin.current_price; // This is the current price from the API
+            
+            if (coin.circulatingSupply) {
+                const circulatingSupply = convertSupplyToNumber(coin.circulatingSupply);
+                currentMcap = currentPrice * circulatingSupply; // Calculate the current market cap
+            } else {
+                currentMcap = apiCoin.market_cap; // Or use the market cap from the API if circulatingSupply is not provided
+            }
 
-            // ROI since initial price to current price
-            coin.calculatedRoiSince = initialPrice > 0 ? (currentPrice - initialPrice) / initialPrice : 0;
+            const baseCaseMcap = convertToNumber(coin.baseCaseMcap);
+            const roiBaseCase = currentMcap ? baseCaseMcap / currentMcap : 0;
+            coin.calculatedBaseROI = Math.round(roiBaseCase * 100) / 100; // keeping the precision to two decimal places
 
-            // Future growth potential to reach base and moon case targets
-            coin.remainingBaseCaseMultiplier = baseCaseMultiplier / (1 + coin.calculatedRoiSince);
-            coin.remainingMoonCaseMultiplier = moonCaseMultiplier / (1 + coin.calculatedRoiSince);
+            coin.calculatedRoiSince = calculateRoiSince(coin, currentPrice);
+
+            const moonCaseMcap = convertToNumber(coin.moonCaseMcap);
+            const roiMoonCase = currentMcap ? moonCaseMcap / currentMcap : 0;
+            coin.calculatedMoonROI = Math.round(roiMoonCase * 100) / 100; // keeping the precision to two decimal places
         }
     });
 }
-
-
 
 
 function calculateRoiSince(coin, currentPrice) {
@@ -389,54 +379,52 @@ function calculateRoiSince(coin, currentPrice) {
 let currentSortCriterion = 'baseCaseROI'; // Default sorting criterion
 
 
-function displaySortedResults() {
+function displaySortedResults(apiData) {
+    
     // Clear previous results in both table bodies
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
     const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
     tableBodyFixed.innerHTML = '';
     tableBodyScroll.innerHTML = '';
 
-    // Clone to avoid mutating the original array
-    let sortedData = [...cryptoData]; 
-
-    sortedData.sort((a, b) => {
-        let aCoin = globalApiData.find(c => c.symbol === a.symbol.toLowerCase());
-        let bCoin = globalApiData.find(c => c.symbol === b.symbol.toLowerCase());
-        let aMarketCap = aCoin ? aCoin.market_cap : 0;
-        let bMarketCap = bCoin ? bCoin.market_cap : 0;
-
-        switch (currentSortCriterion) {
-            case 'baseCaseROI':
-                return isBaseCaseRoiDescending ? 
-                    b.remainingBaseCaseMultiplier - a.remainingBaseCaseMultiplier :
-                    a.remainingBaseCaseMultiplier - b.remainingBaseCaseMultiplier;
-            case 'moonCaseROI':
-                return isMoonCaseRoiDescending ? 
-                    b.remainingMoonCaseMultiplier - a.remainingMoonCaseMultiplier :
-                    a.remainingMoonCaseMultiplier - b.remainingMoonCaseMultiplier;
-            case 'roiSince':
-                return isRoiSinceDescending ?
-                    b.calculatedRoiSince - a.calculatedRoiSince :
-                    a.calculatedRoiSince - b.calculatedRoiSince;
-            case 'currentMarketCap':
-                return isCurrentMarketCapDescending ?
-                    bMarketCap - aMarketCap :
-                    aMarketCap - bMarketCap;
-            default:
-                return 0;
+    // Determine sorting criterion and sort the cryptoData array accordingly
+    if (currentSortCriterion === 'baseCaseROI') {
+        cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
+    } else if (currentSortCriterion === 'roiSince') {
+        if (isRoiSinceDescending) {
+            cryptoData.sort((a, b) => b.calculatedRoiSince - a.calculatedRoiSince);
+        } else {
+            cryptoData.sort((a, b) => a.calculatedRoiSince - b.calculatedRoiSince);
         }
-    });
+    } else if (currentSortCriterion === 'moonCaseROI') {
+        if (isMoonCaseRoiDescending) {
+            cryptoData.sort((a, b) => b.calculatedMoonROI - a.calculatedMoonROI);
+        } else {
+            cryptoData.sort((a, b) => a.calculatedMoonROI - b.calculatedMoonROI);
+        }
+    } if (currentSortCriterion === 'baseCaseROI') {
+        if (isBaseCaseRoiDescending) {
+            cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
+        } else {
+            cryptoData.sort((a, b) => a.calculatedBaseROI - b.calculatedBaseROI);
+        }
+    } if (currentSortCriterion === 'currentMarketCap') {
+        cryptoData.sort((a, b) => {
+            const marketCapA = globalApiData.find(c => c.symbol === a.symbol.toLowerCase())?.market_cap || 0;
+            const marketCapB = globalApiData.find(c => c.symbol === b.symbol.toLowerCase())?.market_cap || 0;
+            return isCurrentMarketCapDescending ? marketCapB - marketCapA : marketCapA - marketCapB;
+        });
+    }
+    
 
     // Display the sorted results
-    sortedData.forEach((coin, index) => {
+    cryptoData.forEach((coin, index) => {
         const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
         if (apiCoin) {
             displayResult(apiCoin, coin, index + 1);
         }
     });
 }
-
-
 
 function convertSupplyToNumber(supply) {
     if (!supply) return 0;
@@ -484,10 +472,6 @@ function displayResult(coin, crypto, rank) {
     //console.log(document.getElementById('crypto-table-body-scroll')); // Check if this element is found
     const row = document.createElement('tr');
 
-    // Use the calculated remaining growth for display
-    const remainingBaseGrowth = crypto.remainingBaseCaseGrowth;
-    const remainingMoonGrowth = crypto.remainingMoonCaseGrowth;
-
     // Convert initialMarketCap to number for calculation
     const initialMarketCap = convertToNumber(crypto.initialMarketCap);
     const currentMarketCap = coin.market_cap;
@@ -525,9 +509,9 @@ function displayResult(coin, crypto, rank) {
     rowScroll.innerHTML = `
         <td class="${isContentBlurred ? 'blur-content' : ''}">$${coin.market_cap.toLocaleString()}</td>
         <td>$${crypto.baseCaseMcap} (${crypto.baseRank})</td>
-        <td>${crypto.remainingBaseCaseMultiplier.toFixed(0)}x</td> <!-- Display Base Case Multiplier -->
+        <td>${Math.round(crypto.calculatedBaseROI)}x</td> <!-- Rounded to nearest whole number -->
         <td>$${crypto.moonCaseMcap} (${crypto.moonRank})</td>
-        <td>${crypto.remainingMoonCaseMultiplier.toFixed(0)}x</td> <!-- Display Moon Case Multiplier -->
+        <td>${Math.round(convertToNumber(crypto.moonCaseMcap) / currentMarketCap)}x</td>
         <td class="${roiClass}">${roiSymbol} ${(Math.abs(roiToDate) * 100).toFixed(1)}%</td>
     `;
     tableBodyScroll.appendChild(rowScroll);
