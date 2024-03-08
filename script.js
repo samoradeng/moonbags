@@ -198,8 +198,14 @@ const cryptoData = [
         "initialMarketCap": "93M",
         "initialPrice": "0.01660950", // Price of celer-network on December 5, 2023
     },
-
 ];
+
+const bitcoinData = {
+    "name": "bitcoin",
+    "symbol": "btc", // Symbol for bitcoin
+    "initialMarketCap": "820B",
+    "initialPrice": "41974" // Correct initial price of Bitcoin without comma
+};
 
 const upArrow = '&#x25B2;'; // Unicode for upward-pointing triangle
 const downArrow = '&#x25BC;'; // Unicode for downward-pointing triangle
@@ -318,19 +324,35 @@ const fetchInterval = 30000; // 30 seconds
 
 // Fetch data only once on page load, not every time the header is clicked
 function fetchCryptoData() {
-    const ids = cryptoData.map(coin => coin.name).join(',');
+    const ids = [cryptoData.map(coin => coin.name),bitcoinData.name].join(',');
     fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
         .then(response => response.json())
         .then(apiData => {
             globalApiData = apiData; // Store fetched data globally
+            consoleLogBitcoinPrice(apiData);
             processApiData();
         })
         .catch(error => console.error('Error fetching data:', error));
 }
 
+// Function to log Bitcoin's current price
+function consoleLogBitcoinPrice(apiData) {
+    const bitcoinData = apiData.find(coin => coin.symbol === 'btc');
+    if (bitcoinData) {
+        console.log(`Current price of Bitcoin: $${bitcoinData.current_price}`);
+    } else {
+        console.log('Bitcoin data not found');
+    }
+}
+
+
+
+
 function processApiData() {
-    calculateROI();
-    displaySortedResults(); // Use global variable for data
+    calculateROI(); // Calculates ROI for each coin
+    const bitcoinCurrentPrice = getBitcoinCurrentPrice(); // Get the current price of Bitcoin from global API data
+    displaySortedResults(); // Display the sorted results on the page
+    calculateAverageROI(bitcoinCurrentPrice); // Pass the current price of Bitcoin for ROI calculation
 }
 
 
@@ -367,11 +389,13 @@ function calculateROI() {
 function calculateRoiSince(coin, currentPrice) {
     const initialPrice = parseFloat(coin.initialPrice);
     if (initialPrice && currentPrice) {
-        const roiSince = (currentPrice - initialPrice) / initialPrice;
-        return roiSince;
+        // Directly calculate ROI as a percentage
+        const roiSince = ((currentPrice - initialPrice) / initialPrice);
+        return roiSince; // This should now return the correct percentage
     }
-    return 0;
+    return 0; // Return 0 if there's no valid data for calculation
 }
+
 
 
 
@@ -435,16 +459,19 @@ function convertSupplyToNumber(supply) {
 
 
 function convertToNumber(value) {
+    if (typeof value !== 'string') return 0;  // Check if the value is not a string
+
     let number = parseFloat(value);
-    if (value.includes('B')) {
+    if (number && value.includes('B')) {
         number *= 1e9;
-    } else if (value.includes('M')) {
+    } else if (number && value.includes('M')) {
         number *= 1e6;
-    } else if (value.includes('K')) {
+    } else if (number && value.includes('K')) {
         number *= 1e3;
     }
     return number;
 }
+
 
 
 function hasUserPaid() {
@@ -516,3 +543,52 @@ function displayResult(coin, crypto, rank) {
     `;
     tableBodyScroll.appendChild(rowScroll);
 }
+
+
+
+
+
+function getBitcoinCurrentPrice() {
+    const bitcoinApiData = globalApiData.find(coin => coin.symbol === 'btc');
+    if (bitcoinApiData) {
+        return bitcoinApiData.current_price; // Ensure you are getting a numeric value
+    } else {
+        console.log('Bitcoin data not found');
+        return 0; // Return 0 if Bitcoin data is not found to avoid null in calculations
+    }
+}
+
+
+function calculateAverageROI() {
+    const nonBitcoinCoins = cryptoData; // Assuming cryptoData already excludes Bitcoin
+    const totalROI = nonBitcoinCoins.reduce((acc, coin) => {
+        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
+        return acc + calculateRoiSince(coin, apiCoin ? apiCoin.current_price : 0);
+    }, 0);
+    const averageROI = totalROI / nonBitcoinCoins.length ;
+
+    // Assuming you've got the current price for Bitcoin somewhere after fetching data
+    const bitcoinCurrentPrice = getBitcoinCurrentPrice(); // Ensure this gets the actual current price
+    const bitcoinROI = bitcoinCurrentPrice ? calculateRoiSince(bitcoinData, bitcoinCurrentPrice) : 0;
+
+    // Display the results
+    displayROISummary(averageROI, bitcoinROI);
+}
+
+
+function displayROISummary(averageROI, bitcoinROI) {
+    const roiSummaryElement = document.getElementById('roi-summary');
+    const averageROISymbol = averageROI >= 0 ? upArrow : downArrow; // Determine the symbol based on the ROI
+    const bitcoinROISymbol = bitcoinROI >= 0 ? upArrow : downArrow; // Determine the symbol based on the ROI
+    const averageROIClass = averageROI >= 0 ? 'positive-roi' : 'negative-roi'; // Determine the class based on the ROI
+    const bitcoinROIClass = bitcoinROI >= 0 ? 'positive-roi' : 'negative-roi'; // Determine the class based on the ROI
+
+    // Display the summary with appropriate symbols and coloring
+    roiSummaryElement.innerHTML = `
+    <p>• Bitcoin ROI (Return on Investment) so far: <span class="${bitcoinROIClass}">${bitcoinROISymbol} ${(Math.abs(bitcoinROI) * 100).toFixed(1)}%</span></p>
+        <p>• Average ROI of the 15 selected coins so far: <span class="${averageROIClass}">${averageROISymbol} ${(Math.abs(averageROI) * 100).toFixed(1)}%</span></p>
+        
+    `;
+}
+
+
