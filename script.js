@@ -586,7 +586,7 @@ function displayROISummary(averageROI, bitcoinROI) {
     // Display the summary with appropriate symbols and coloring
     roiSummaryElement.innerHTML = `
     <p>• Bitcoin ROI (Return on Investment) so far: <span class="${bitcoinROIClass}">${bitcoinROISymbol} ${(Math.abs(bitcoinROI) * 100).toFixed(1)}%</span></p>
-        <p>• Average ROI of the 15 selected coins so far: <span class="${averageROIClass}">${averageROISymbol} ${(Math.abs(averageROI) * 100).toFixed(1)}%</span></p>
+        <p>• Average ROI of the 15 coins so far: <span class="${averageROIClass}">${averageROISymbol} ${(Math.abs(averageROI) * 100).toFixed(1)}%</span></p>
         
     `;
 }
