@@ -2,7 +2,7 @@ body {
     font-family: Inter, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     margin: 0;
     padding: 0;
-    background-color:rgb(246, 246, 246);;
+    background-color: rgb(246, 246, 246);
     
 }
 
@@ -20,7 +20,7 @@ h1 {
 
 #homeParagraph{
     margin: 8px 48px;
-    margin-bottom: 56px;
+    margin-bottom: 24px;
     padding: 0;
     max-width: 60ch;
     display: flex;
@@ -29,6 +29,30 @@ h1 {
     font-size: 16px;
     line-height: 130%;
 }
+
+#roiSummaryParagraph {
+    margin: 8px 48px;
+    margin-bottom: 56px;
+    padding: 0;
+    max-width: 60ch;
+    display: block; /* Changed from flex to block for better text control */
+    align-items: flex-start;
+    justify-content: left;
+    font-size: 16px;
+    line-height: 130%;
+}
+#roiSummaryParagraph p{
+    margin-bottom: 0;
+    padding-bottom: 0px;
+}
+
+#roi-summary p {
+    margin-top: 0;
+    margin-bottom: 0px;
+    padding: 0;
+    display: block; /* Ensure it is block to respect the natural flow */
+}
+
 
 
 
@@ -87,6 +111,9 @@ th {
     background-color: white;
 }
 
+
+
+
 /* Add this CSS for small screens (max-width: 600px) */
 /* Add this CSS for small screens (max-width: 600px) */
 /* Add this CSS for small screens (max-width: 600px) */
@@ -117,12 +144,24 @@ th {
     
     #homeParagraph{
         margin: 8px 16px;
-        margin-bottom: 56px;
+        margin-bottom: 0px;
         padding: 0;
         max-width: 60ch;
         display: flex;
         align-items: flex-start;
         justify-content: left;
+    }
+
+    #roiSummaryParagraph {
+        margin: 8px 16px;
+        margin-bottom: 56px;
+        padding: 0;
+        max-width: 60ch;
+        display: block; /* Changed from flex to block for better text control */
+        align-items: flex-start;
+        justify-content: left;
+        font-size: 16px;
+        line-height: 130%;
     }
 
     table {
