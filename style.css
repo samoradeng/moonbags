@@ -2,16 +2,16 @@ body {
     font-family: Inter, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     margin: 0;
     padding: 0;
-    background-color: rgb(246, 246, 246);
+    background-color: rgb(245, 245, 247);
     
 }
 
 h1 {
     font-family: Inter, -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 24px;
-    color: #333;
+    color: rgb(29, 29, 31);
     margin-top: 48px;
-    margin-bottom: 0;
+    margin-bottom: 32px;
     margin-left: 48px;
     
     display: flex;
@@ -54,7 +54,49 @@ h1 {
 }
 
 
+.tabs {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    margin-left: 40px;
+    margin-right: 0px;
+    display: flex;
+    justify-content:left;
+}
 
+.tab {
+    font-family: "Inter", sans-serif;    
+    padding: 10px 20px;
+    margin: 0 10px;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight:500;
+    background-color: rgb(245, 245, 247);
+    border: none;
+    outline: none;
+    border-radius: 8px;
+}
+
+.tab:hover {
+    text-decoration: underline;
+    
+    
+}
+
+/* Active tab style */
+.active-tab {
+    background-color: rgb(29, 29, 31);
+    color: rgb(255, 255, 255);
+    font-weight:00;
+}
+
+.active-tab.tab:hover {
+    text-decoration: none;
+}
+
+button.tab {
+    margin-right: 0px;
+}
 
 #crypto-container {
     display: flex;
@@ -135,7 +177,7 @@ th {
         font-size: 24px;
         color: #333;
         margin-top: 24px;
-        margin-bottom: 0;
+        margin-bottom: 32px;
         margin-left: 16px;
         
         display: flex;
@@ -144,7 +186,7 @@ th {
     
     #homeParagraph{
         margin: 8px 16px;
-        margin-bottom: 0px;
+        margin-bottom: 32px;
         padding: 0;
         max-width: 60ch;
         display: flex;
@@ -162,6 +204,14 @@ th {
         justify-content: left;
         font-size: 16px;
         line-height: 130%;
+    }
+
+
+    .tabs {
+        margin-left: 0px;
+        margin-right: 0px;
+        display: flex;
+        justify-content:left;
     }
 
     table {
@@ -219,7 +269,7 @@ th {
 
 @media screen and (min-width: 601px) {
 
-    
+   
     
     table {
         min-width: 100px; /* Set the width to 100% to fit the viewport */
@@ -468,4 +518,5 @@ a:active{
     margin-left: 4px; /* Space between header text and symbol */
     
 }
+
 
