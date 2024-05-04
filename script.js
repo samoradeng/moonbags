@@ -204,8 +204,148 @@ const bitcoinData = {
     "name": "bitcoin",
     "symbol": "btc", // Symbol for bitcoin
     "initialMarketCap": "820B",
-    "initialPrice": "41974" // Correct initial price of Bitcoin without comma
+    "initialPrice": "41974", // Correct initial price of Bitcoin without comma
+    "aprilMarketCap": "1,379,324,055,321",
+    "aprilPrice": "67252",
 };
+
+const newCryptoData = [
+    
+    {
+        "name": "botto",
+        "symbol": "botto", // Symbol for botto
+        "baseCaseMcap": "550M",
+        "baseRank": "",
+        "baseCase":"10",
+        "moonCaseMcap": "2.75B",
+        "moonRank": "",
+        "moonCase": "50",
+        "tech": "85%",
+        "initialMarketCap": "55M",
+        "initialPrice": "0.995304", // Price of Botto on April 12, 2024
+    },
+    {
+        "name": "marinade",
+        "symbol": "mnde", // Symbol for Marinade
+        "baseCaseMcap": "1.24B",
+        "baseRank": "",
+        "baseCase":"20",
+        "moonCaseMcap": "6.2B",
+        "moonRank": "",
+        "moonCase": "100",
+        "tech": "87%",
+        "initialMarketCap": "62M",
+        "initialPrice": "0.203489", // Price of Marinade on April 12, 2024
+    },
+    {
+        "name": "astroport-fi",
+        "symbol": "astro", // Symbol for astroport
+        "baseCaseMcap": "1.36B",
+        "baseRank": "",
+        "baseCase":"20",
+        "moonCaseMcap": "4.8B",
+        "moonRank": "",
+        "moonCase": "70",
+        "tech": "89%",
+        "initialMarketCap": "68M",
+        "initialPrice": "0.148095", // Price of astroport on April 12, 2024
+    },
+    {
+        "name": "nibiru",
+        "symbol": "nibi", // Symbol for nibiru
+        "baseCaseMcap": "1.6B",
+        "baseRank": "",
+        "baseCase":"20",
+        "moonCaseMcap": "8B",
+        "moonRank": "",
+        "moonCase": "100",
+        "tech": "81%",
+        "circulatingSupply": "186,694,846",
+        "initialMarketCap": "79M",
+        "initialPrice": "0.369764", // Price of nibiru on April 12, 2024
+    },
+    {
+        "name": "spacemesh",
+        "symbol": "$smh", // Symbol for spacemesh
+        "baseCaseMcap": "2B",
+        "baseRank": "",
+        "baseCase":"20",
+        "moonCaseMcap": "21B",
+        "moonRank": "",
+        "moonCase": "200",
+        "tech": "81%",
+        "circulatingSupply": "34,954,547.42",
+        "initialMarketCap": "104M",
+        "initialPrice": "2.88", // Price of spacemesh on April 12, 2024
+    },
+    {
+        "name": "velas",
+        "symbol": "vlx", // Symbol for velas
+        "baseCaseMcap": "800M",
+        "baseRank": "",
+        "baseCase":"20",
+        "moonCaseMcap": "8B",
+        "moonRank": "",
+        "moonCase": "200",
+        "tech": "90%",
+        "initialMarketCap": "40M",
+        "initialPrice": "0.01421586", // Price of velas on April 12, 2024
+    },
+    {
+        "name": "boson-protocol",
+        "symbol": "boson", // Symbol for boson
+        "baseCaseMcap": "2B",
+        "baseRank": "",
+        "baseCase":"25",
+        "moonCaseMcap": "8B",
+        "moonRank": "",
+        "moonCase": "100",
+        "tech": "89%",
+        "initialMarketCap": "40M",
+        "initialPrice": "0.560449", // Price of boson on April 12, 2024
+    },
+    {
+        "name": "across-protocol",
+        "symbol": "acx", // Symbol for across
+        "baseCaseMcap": "1B",
+        "baseRank": "",
+        "baseCase":"25",
+        "moonCaseMcap": "4B",
+        "moonRank": "",
+        "moonCase": "100",
+        "tech": "87%",
+        "initialMarketCap": "40M",
+        "initialPrice": "0.270585", // Price of across on April 12, 2024
+    },
+    {
+        "name": "script-network",
+        "symbol": "scpt", // Symbol for script
+        "baseCaseMcap": "360M",
+        "baseRank": "",
+        "baseCase":"40",
+        "moonCaseMcap": "900M",
+        "moonRank": "",
+        "moonCase": "200",
+        "tech": "80%",
+        "initialMarketCap": "9M",
+        "initialPrice": "0.03833633", // Price of script on April 12, 2024
+    },
+    {
+        "name": "subquery-network",
+        "symbol": "sqt", // Symbol for SubQuery
+        "baseCaseMcap": "1.25B",
+        "baseRank": "",
+        "baseCase":"50",
+        "moonCaseMcap": "5B",
+        "moonRank": "",
+        "moonCase": "200",
+        "tech": "87%",
+        "initialMarketCap": "25M",
+        "initialPrice": "0.02787945", // Price of SubQuery on April 12, 2024
+    },
+    
+];
+
 
 const upArrow = '&#x25B2;'; // Unicode for upward-pointing triangle
 const downArrow = '&#x25BC;'; // Unicode for downward-pointing triangle
@@ -324,7 +464,7 @@ const fetchInterval = 30000; // 30 seconds
 
 // Fetch data only once on page load, not every time the header is clicked
 function fetchCryptoData() {
-    const ids = [cryptoData.map(coin => coin.name),bitcoinData.name].join(',');
+    const ids = [cryptoData.map(coin => coin.name),bitcoinData.name,newCryptoData.map(coin => coin.name)].join(',');
     fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
         .then(response => response.json())
         .then(apiData => {
@@ -339,12 +479,60 @@ function fetchCryptoData() {
 function consoleLogBitcoinPrice(apiData) {
     const bitcoinData = apiData.find(coin => coin.symbol === 'btc');
     if (bitcoinData) {
-        console.log(`Current price of Bitcoin: $${bitcoinData.current_price}`);
+       // console.log(`Current price of Bitcoin: $${bitcoinData.current_price}`);
     } else {
-        console.log('Bitcoin data not found');
+       // console.log('Bitcoin data not found');
     }
 }
 
+
+
+
+
+
+
+
+function calculateROI() {
+    function processDataSet(dataSet) {
+        dataSet.forEach(coin => {
+            const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
+            if (apiCoin) {
+                let currentPrice = apiCoin.current_price;
+                let currentMcap = apiCoin.market_cap || 0;
+
+               // console.log(`Processing ${coin.name}:`);
+                //console.log(`API Market Cap: ${apiCoin.market_cap}`);
+                //console.log(`API Current Price: ${currentPrice}`);
+
+                // Override current price if it's zero and initial price is provided
+                if (currentPrice === 0 && coin.initialPrice) {
+                    currentPrice = parseFloat(coin.initialPrice);
+                   // console.log(`Using Initial Price for ${coin.name}: ${currentPrice}`);
+                }
+
+                if (coin.circulatingSupply) {
+                    const circulatingSupply = convertSupplyToNumber(coin.circulatingSupply);
+                    currentMcap = currentPrice * circulatingSupply;
+                    //console.log(`Recalculated Market Cap using Circulating Supply for ${coin.name}: ${currentMcap}`);
+                }
+
+                const baseCaseMcap = convertToNumber(coin.baseCaseMcap);
+                const roiBaseCase = currentMcap ? (baseCaseMcap / currentMcap) : 0;
+                coin.calculatedBaseROI = Math.round(roiBaseCase * 100) / 100;
+
+                const moonCaseMcap = convertToNumber(coin.moonCaseMcap);
+                const roiMoonCase = currentMcap ? (moonCaseMcap / currentMcap) : 0;
+                coin.calculatedMoonROI = Math.round(roiMoonCase * 100) / 100;
+
+                coin.calculatedRoiSince = calculateRoiSince(coin, currentPrice);
+            }
+        });
+    }
+
+    // Process both existing and new crypto datasets
+    processDataSet(cryptoData);
+    processDataSet(newCryptoData);
+}
 
 
 
@@ -357,43 +545,9 @@ function processApiData() {
 
 
 
-
-function calculateROI() {
-    cryptoData.forEach(coin => {
-        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
-        if (apiCoin) {
-            let currentMcap;
-            const currentPrice = apiCoin.current_price; // This is the current price from the API
-            
-            if (coin.circulatingSupply) {
-                const circulatingSupply = convertSupplyToNumber(coin.circulatingSupply);
-                currentMcap = currentPrice * circulatingSupply; // Calculate the current market cap
-            } else {
-                currentMcap = apiCoin.market_cap; // Or use the market cap from the API if circulatingSupply is not provided
-            }
-
-            const baseCaseMcap = convertToNumber(coin.baseCaseMcap);
-            const roiBaseCase = currentMcap ? baseCaseMcap / currentMcap : 0;
-            coin.calculatedBaseROI = Math.round(roiBaseCase * 100) / 100; // keeping the precision to two decimal places
-
-            coin.calculatedRoiSince = calculateRoiSince(coin, currentPrice);
-
-            const moonCaseMcap = convertToNumber(coin.moonCaseMcap);
-            const roiMoonCase = currentMcap ? moonCaseMcap / currentMcap : 0;
-            coin.calculatedMoonROI = Math.round(roiMoonCase * 100) / 100; // keeping the precision to two decimal places
-        }
-    });
-}
-
-
 function calculateRoiSince(coin, currentPrice) {
     const initialPrice = parseFloat(coin.initialPrice);
-    if (initialPrice && currentPrice) {
-        // Directly calculate ROI as a percentage
-        const roiSince = ((currentPrice - initialPrice) / initialPrice);
-        return roiSince; // This should now return the correct percentage
-    }
-    return 0; // Return 0 if there's no valid data for calculation
+    return initialPrice && currentPrice ? ((currentPrice - initialPrice) / initialPrice) : 0;
 }
 
 
@@ -402,71 +556,109 @@ function calculateRoiSince(coin, currentPrice) {
 
 let currentSortCriterion = 'baseCaseROI'; // Default sorting criterion
 
+let currentTab = 'existing';  // Keeps track of which tab is active
 
-function displaySortedResults(apiData) {
-    
+function switchTab(tab) {
+    currentTab = tab;
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t => t.classList.remove('active-tab'));
+    document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active-tab');
+
+    // Update the ROI Since header based on the selected tab
+    if (tab === 'existing') {
+        document.getElementById('roiSinceHeader').textContent = 'ROI Since (12.5.23)';
+        document.getElementById('homeParagraph').innerHTML = `
+        <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions provided by <a id="website-link" href="https://www.youtube.com/watch?v=iMkuHYJGlzk" target="_blank">Token Metrics.</a> This is not financial advice from me or Token Metrics, just an easy way for me to keep track of these coins. Started Dec 5, 2023.
+            <span class="tooltip">
+                <img id="caution" src="/images/Caution-Grey.svg" alt="Caution">
+                <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
+            </span>`;
+    } else if (tab === 'new') {
+        document.getElementById('roiSinceHeader').textContent = 'ROI Since (04.12.24)';
+        document.getElementById('homeParagraph').innerHTML = `
+        <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions provided by <a id="website-link" href="https://www.youtube.com/watch?v=QuRv8uVCnhY" target="_blank">Token Metrics.</a> This is not financial advice from me or Token Metrics, just an easy way for me to keep track of these coins. Started April 12, 2024.
+            <span class="tooltip">
+                <img id="caution" src="/images/Caution-Grey.svg" alt="Caution">
+                <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
+            </span>`;
+    }
+
+    displaySortedResults();  // Redraw the table with the appropriate data
+    const bitcoinCurrentPrice = getBitcoinCurrentPrice(); // Get the current price of Bitcoin from global API data
+    calculateAverageROI(bitcoinCurrentPrice);  // Recalculate ROI instantly
+}
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    fetchCryptoData(); // Fetch data once on page load
+    switchTab('existing'); // Set the initial tab
+});
+
+
+
+function displaySortedResults() {
     // Clear previous results in both table bodies
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
     const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
     tableBodyFixed.innerHTML = '';
     tableBodyScroll.innerHTML = '';
 
-    // Determine sorting criterion and sort the cryptoData array accordingly
-    if (currentSortCriterion === 'baseCaseROI') {
-        cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
-    } else if (currentSortCriterion === 'roiSince') {
-        if (isRoiSinceDescending) {
-            cryptoData.sort((a, b) => b.calculatedRoiSince - a.calculatedRoiSince);
-        } else {
-            cryptoData.sort((a, b) => a.calculatedRoiSince - b.calculatedRoiSince);
-        }
-    } else if (currentSortCriterion === 'moonCaseROI') {
-        if (isMoonCaseRoiDescending) {
-            cryptoData.sort((a, b) => b.calculatedMoonROI - a.calculatedMoonROI);
-        } else {
-            cryptoData.sort((a, b) => a.calculatedMoonROI - b.calculatedMoonROI);
-        }
-    } if (currentSortCriterion === 'baseCaseROI') {
-        if (isBaseCaseRoiDescending) {
-            cryptoData.sort((a, b) => b.calculatedBaseROI - a.calculatedBaseROI);
-        } else {
-            cryptoData.sort((a, b) => a.calculatedBaseROI - b.calculatedBaseROI);
-        }
-    } if (currentSortCriterion === 'currentMarketCap') {
-        cryptoData.sort((a, b) => {
+    // Select the data based on the current tab
+    let dataToDisplay = currentTab === 'existing' ? cryptoData : newCryptoData;
+
+    // Sort dataToDisplay based on the current sort criterion
+    dataToDisplay.sort((a, b) => {
+        let sortValue = 0;
+        if (currentSortCriterion === 'baseCaseROI') {
+            sortValue = isBaseCaseRoiDescending ? b.calculatedBaseROI - a.calculatedBaseROI : a.calculatedBaseROI - b.calculatedBaseROI;
+    //console.log(`Comparing ${a.name} (${a.calculatedBaseROI}) and ${b.name} (${b.calculatedBaseROI}), sortValue: ${sortValue}`);
+    
+        } else if (currentSortCriterion === 'moonCaseROI') {
+            sortValue = isMoonCaseRoiDescending ? b.calculatedMoonROI - a.calculatedMoonROI : a.calculatedMoonROI - b.calculatedMoonROI;
+        } else if (currentSortCriterion === 'roiSince') {
+            sortValue = isRoiSinceDescending ? b.calculatedRoiSince - a.calculatedRoiSince : a.calculatedRoiSince - b.calculatedRoiSince;
+        } else if (currentSortCriterion === 'currentMarketCap') {
             const marketCapA = globalApiData.find(c => c.symbol === a.symbol.toLowerCase())?.market_cap || 0;
             const marketCapB = globalApiData.find(c => c.symbol === b.symbol.toLowerCase())?.market_cap || 0;
-            return isCurrentMarketCapDescending ? marketCapB - marketCapA : marketCapA - marketCapB;
-        });
-    }
-    
+            sortValue = isCurrentMarketCapDescending ? marketCapB - marketCapA : marketCapA - marketCapB;
+        }
+        return sortValue;
+    });
 
     // Display the sorted results
-    cryptoData.forEach((coin, index) => {
+    dataToDisplay.forEach((coin, index) => {
         const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
         if (apiCoin) {
             displayResult(apiCoin, coin, index + 1);
         }
     });
+
+    dataToDisplay.sort((a, b) => {
+        let sortValue = isBaseCaseRoiDescending ? b.calculatedBaseROI - a.calculatedBaseROI : a.calculatedBaseROI - b.calculatedBaseROI;
+        //console.log(`Comparing ${a.name} (${a.calculatedBaseROI}) and ${b.name} (${b.calculatedBaseROI}), sortValue: ${sortValue}`);
+        return sortValue;
+    });
+    
 }
 
+
 function convertSupplyToNumber(supply) {
-    if (!supply) return 0;
-    return parseFloat(supply.replace(/,/g, ''));
+    return supply ? parseFloat(supply.replace(/,/g, '')) : 0;
 }
+
 
 
 
 
 function convertToNumber(value) {
-    if (typeof value !== 'string') return 0;  // Check if the value is not a string
-
+    if (!value) return 0;
     let number = parseFloat(value);
-    if (number && value.includes('B')) {
+    if (value.includes('B')) {
         number *= 1e9;
-    } else if (number && value.includes('M')) {
+    } else if (value.includes('M')) {
         number *= 1e6;
-    } else if (number && value.includes('K')) {
+    } else if (value.includes('K')) {
         number *= 1e3;
     }
     return number;
@@ -483,7 +675,7 @@ function hasUserPaid() {
 // Add this function to periodically refresh the data
 function refreshData() {
     fetchCryptoData();
-    console.log("Data refreshed");
+    //("Data refreshed");
 }
 
 // Call refreshData() every 30 seconds
@@ -495,48 +687,39 @@ setInterval(() => {
 function displayResult(coin, crypto, rank) {
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
     const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
-    //console.log(document.getElementById('crypto-table-body-fixed')); // Check if this element is found
-    //console.log(document.getElementById('crypto-table-body-scroll')); // Check if this element is found
+
     const row = document.createElement('tr');
 
     // Convert initialMarketCap to number for calculation
     const initialMarketCap = convertToNumber(crypto.initialMarketCap);
-    const currentMarketCap = coin.market_cap;
+    let currentMarketCap = coin.market_cap || 0;  // Use fetched market cap or 0 if not available
 
-    const currentPrice = coin.current_price; // Assume this is the current price from the API
-    const roiToDate = crypto.calculatedRoiSince; 
-
-
-
-    // Determine the class and arrow symbol based on ROI to Date
-    let roiSymbol = '';
-    let roiClass = '';
-
-    if (roiToDate >= 0) {
-        roiSymbol = upArrow;
-        roiClass = 'positive-roi';
-    } else {
-        roiSymbol = downArrow;
-        roiClass = 'negative-roi';
+    // Properly fetch and use circulating supply from your data arrays
+    if (crypto.circulatingSupply && coin.current_price > 0) {
+        const circulatingSupply = convertSupplyToNumber(crypto.circulatingSupply);
+        currentMarketCap = coin.current_price * circulatingSupply;
+       // console.log(`Processing ${crypto.name}: Circulating Supply = ${circulatingSupply}, Current Market Cap = ${currentMarketCap}`);
     }
 
-   
+    const currentPrice = coin.current_price; // Assume this is the current price from the API
+    const roiToDate = calculateRoiSince(crypto, currentPrice); // Recalculate ROI based on updated price
 
-     // Create row for fixed columns (Rank and Name)
+    // Determine the class and arrow symbol based on ROI to Date
+    let roiSymbol = roiToDate >= 0 ? upArrow : downArrow;
+    let roiClass = roiToDate >= 0 ? 'positive-roi' : 'negative-roi';
+
+    // Create row for fixed columns (Rank and Name)
     const rowFixed = document.createElement('tr');
-    rowFixed.innerHTML = `
-        <td>${rank}</td>
-        <td><img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">${coin.name}</td>
-    `;
+    rowFixed.innerHTML = `<td>${rank}</td><td><img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">${coin.name}</td>`;
     tableBodyFixed.appendChild(rowFixed);
- 
-     // Create row for scrollable columns (Rest of the data)
+
+    // Create row for scrollable columns (Rest of the data)
     const rowScroll = document.createElement('tr');
     const isContentBlurred = rank <= 5 && !hasUserPaid();
     rowScroll.innerHTML = `
-        <td class="${isContentBlurred ? 'blur-content' : ''}">$${coin.market_cap.toLocaleString()}</td>
+        <td class="${isContentBlurred ? 'blur-content' : ''}">$${currentMarketCap.toLocaleString()}</td>
         <td>$${crypto.baseCaseMcap} (${crypto.baseRank})</td>
-        <td>${Math.round(crypto.calculatedBaseROI)}x</td> <!-- Rounded to nearest whole number -->
+        <td>${Math.round(crypto.calculatedBaseROI)}x</td>
         <td>$${crypto.moonCaseMcap} (${crypto.moonRank})</td>
         <td>${Math.round(convertToNumber(crypto.moonCaseMcap) / currentMarketCap)}x</td>
         <td class="${roiClass}">${roiSymbol} ${(Math.abs(roiToDate) * 100).toFixed(1)}%</td>
@@ -548,47 +731,64 @@ function displayResult(coin, crypto, rank) {
 
 
 
+
+
 function getBitcoinCurrentPrice() {
     const bitcoinApiData = globalApiData.find(coin => coin.symbol === 'btc');
     if (bitcoinApiData) {
         return bitcoinApiData.current_price; // Ensure you are getting a numeric value
     } else {
-        console.log('Bitcoin data not found');
+        //console.log('Bitcoin data not found');
         return 0; // Return 0 if Bitcoin data is not found to avoid null in calculations
     }
 }
 
 
+
 function calculateAverageROI() {
-    const nonBitcoinCoins = cryptoData; // Assuming cryptoData already excludes Bitcoin
-    const totalROI = nonBitcoinCoins.reduce((acc, coin) => {
+    let dataSet = (currentTab === 'existing') ? cryptoData : newCryptoData;
+
+    // Select the appropriate Bitcoin data based on the current tab
+    const bitcoinInitialPrice = currentTab === 'existing' ? parseFloat(bitcoinData.initialPrice) : parseFloat(bitcoinData.aprilPrice);
+    const bitcoinInitialMarketCap = currentTab === 'existing' ? convertToNumber(bitcoinData.initialMarketCap) : convertToNumber(bitcoinData.aprilMarketCap);
+    const bitcoinCurrentPrice = getBitcoinCurrentPrice();
+
+    // Calculate Bitcoin ROI based on the selected tab's starting values
+    const bitcoinROI = bitcoinCurrentPrice && bitcoinInitialPrice ? ((bitcoinCurrentPrice - bitcoinInitialPrice) / bitcoinInitialPrice) : 0;
+
+    // Calculate average ROI for all coins in the current dataset
+    const totalROI = dataSet.reduce((acc, coin) => {
         const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
-        return acc + calculateRoiSince(coin, apiCoin ? apiCoin.current_price : 0);
+        const currentPrice = apiCoin ? apiCoin.current_price : 0;
+        const initialPrice = parseFloat(coin.initialPrice);
+        const currentROI = initialPrice && currentPrice ? ((currentPrice - initialPrice) / initialPrice) : 0;
+        return acc + currentROI;
     }, 0);
-    const averageROI = totalROI / nonBitcoinCoins.length ;
 
-    // Assuming you've got the current price for Bitcoin somewhere after fetching data
-    const bitcoinCurrentPrice = getBitcoinCurrentPrice(); // Ensure this gets the actual current price
-    const bitcoinROI = bitcoinCurrentPrice ? calculateRoiSince(bitcoinData, bitcoinCurrentPrice) : 0;
+    const averageROI = totalROI / dataSet.length;
 
-    // Display the results
-    displayROISummary(averageROI, bitcoinROI);
+    displayROISummary(averageROI, bitcoinROI, dataSet.length);
 }
 
 
-function displayROISummary(averageROI, bitcoinROI) {
-    const roiSummaryElement = document.getElementById('roi-summary');
-    const averageROISymbol = averageROI >= 0 ? upArrow : downArrow; // Determine the symbol based on the ROI
-    const bitcoinROISymbol = bitcoinROI >= 0 ? upArrow : downArrow; // Determine the symbol based on the ROI
-    const averageROIClass = averageROI >= 0 ? 'positive-roi' : 'negative-roi'; // Determine the class based on the ROI
-    const bitcoinROIClass = bitcoinROI >= 0 ? 'positive-roi' : 'negative-roi'; // Determine the class based on the ROI
 
-    // Display the summary with appropriate symbols and coloring
+
+
+
+
+function displayROISummary(averageROI, bitcoinROI, numberOfCoins) {
+    const roiSummaryElement = document.getElementById('roi-summary');
+    const averageROISymbol = averageROI >= 0 ? upArrow : downArrow;
+    const bitcoinROISymbol = bitcoinROI >= 0 ? upArrow : downArrow;
+    const averageROIClass = averageROI >= 0 ? 'positive-roi' : 'negative-roi';
+    const bitcoinROIClass = bitcoinROI >= 0 ? 'positive-roi' : 'negative-roi';
+
+    // Dynamic text based on the number of coins
     roiSummaryElement.innerHTML = `
     <p>• Bitcoin ROI (Return on Investment) so far: <span class="${bitcoinROIClass}">${bitcoinROISymbol} ${(Math.abs(bitcoinROI) * 100).toFixed(1)}%</span></p>
-        <p>• Average ROI of the 15 coins so far: <span class="${averageROIClass}">${averageROISymbol} ${(Math.abs(averageROI) * 100).toFixed(1)}%</span></p>
-        
+        <p>• Average ROI of the ${numberOfCoins} coins so far: <span class="${averageROIClass}">${averageROISymbol} ${(Math.abs(averageROI) * 100).toFixed(1)}%</span></p>
     `;
 }
+
 
 
