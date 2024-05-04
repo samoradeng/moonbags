@@ -6,7 +6,9 @@
     <title>Crypto Moon 💰</title>
     <link rel="icon" href="/images/moonBag.svg">
     <link rel="stylesheet" href="style.css">
-    <script defer data-domain="moonbags.fyi" src="https://plausible.io/js/script.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <h1>moonbags 💰 </h1>
@@ -17,12 +19,18 @@
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
             </span>
             <div id="roiSummaryParagraph">
+                
                 <p id="roi-summary">
                 </p>
             </div>
+            
         </span>
     </p>
     
+    <div class="tabs">
+        <button class="tab" onclick="switchTab('existing')">15 Coins</button>
+        <button class="tab" onclick="switchTab('new')">10 Coins (new)</button>
+    </div>
     
 
     <div id="crypto-container">
