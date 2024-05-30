@@ -412,9 +412,9 @@ function updateCarrotSymbol() {
     // Set the text content for roiSinceHeader based on the current tab
     const roiSinceHeader = document.getElementById('roiSinceHeader');
     if (currentTab === 'existing') {
-        roiSinceHeader.textContent = 'ROI Since (Dec 5, 2023)';
+        roiSinceHeader.textContent = 'ROI Since (12.5.23)';
     } else if (currentTab === 'new') {
-        roiSinceHeader.textContent = 'ROI Since (Apr 12, 2024)';
+        roiSinceHeader.textContent = 'ROI Since (4.12.23)';
     }
 
     document.getElementById('moonCaseRoiHeader').innerHTML = 'Moon Case ROI';
