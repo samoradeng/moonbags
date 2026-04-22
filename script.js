@@ -391,11 +391,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('currentMarketCapHeader').addEventListener('click', function() {
         toggleCurrentMarketCapSorting();
     });
-
-    const copyBtn = document.getElementById('copy-watchlist-btn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', copyWatchlistSymbols);
-    }
 });
 
 function toggleRoiSinceSorting() {
@@ -486,7 +481,7 @@ function fetchCryptoData() {
 
     setStatus('Refreshing prices…', 'loading');
     const ids = cryptoData.map(coin => coin.name).concat(newCryptoData.map(coin => coin.name)).concat(bitcoinData.name).join(',');
-    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&sparkline=true`)
+    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
         .then(async response => {
             if (!response.ok) {
                 const body = await response.text();
@@ -575,18 +570,6 @@ function persistUserPreferences() {
         }));
     } catch (error) {
         console.warn('Could not persist preferences:', error);
-    }
-}
-
-function copyWatchlistSymbols() {
-    const dataSet = currentTab === 'existing' ? cryptoData : newCryptoData;
-    const symbols = dataSet.map(coin => normalizeSymbol(coin.symbol)).join(', ');
-    if (navigator?.clipboard?.writeText) {
-        navigator.clipboard.writeText(symbols)
-            .then(() => setStatus('Watchlist symbols copied to clipboard.', 'success'))
-            .catch(() => setStatus('Could not copy automatically. Please copy manually.', 'error'));
-    } else {
-        setStatus('Clipboard API unavailable in this browser.', 'error');
     }
 }
 
@@ -733,7 +716,6 @@ function displayResult(coin, crypto, rank) {
     const coinLink = coin?.id ? `https://www.coingecko.com/en/coins/${coin.id}` : '#';
     const baseRoiLabel = Number.isFinite(crypto.calculatedBaseROI) ? `${Math.round(crypto.calculatedBaseROI)}x` : 'N/A';
     const moonRoiLabel = Number.isFinite(crypto.calculatedMoonROI) ? `${Math.round(crypto.calculatedMoonROI)}x` : 'N/A';
-    const sparklineSvg = createSparklineSvg(coin?.sparkline_in_7d?.price || []);
 
     const rowFixed = document.createElement('tr');
     rowFixed.innerHTML = `<td>${rank}</td><td><a class="coin-link" href="${coinLink}" target="_blank" rel="noopener noreferrer"><img src="${imageUrl}" alt="${displayName}" style="width: 24px; height: 24px;">${displayName}</a></td>`;
@@ -743,7 +725,6 @@ function displayResult(coin, crypto, rank) {
     const isContentBlurred = rank <= 5 && !hasUserPaid();
     rowScroll.innerHTML = `
         <td class="${isContentBlurred ? 'blur-content' : ''}">${marketCapLabel}</td>
-        <td>${sparklineSvg}</td>
         <td>$${crypto.baseCaseMcap} (${crypto.baseRank})</td>
         <td>${baseRoiLabel}</td>
         <td>$${crypto.moonCaseMcap} (${crypto.moonRank})</td>
@@ -751,24 +732,6 @@ function displayResult(coin, crypto, rank) {
         <td class="${roiClass}">${roiSymbol} ${(Math.abs(roiToDate) * 100).toFixed(1)}%</td>
     `;
     tableBodyScroll.appendChild(rowScroll);
-}
-
-function createSparklineSvg(points) {
-    if (!Array.isArray(points) || points.length < 2) return 'N/A';
-
-    const width = 84;
-    const height = 24;
-    const min = Math.min(...points);
-    const max = Math.max(...points);
-    const range = max - min || 1;
-    const path = points.map((value, i) => {
-        const x = (i / (points.length - 1)) * width;
-        const y = height - ((value - min) / range) * height;
-        return `${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
-    }).join(' ');
-    const trendColor = points[points.length - 1] >= points[0] ? '#0b8043' : '#b00020';
-
-    return `<svg class="sparkline" viewBox="0 0 ${width} ${height}" aria-label="7 day trend"><path d="${path}" fill="none" stroke="${trendColor}" stroke-width="2"/></svg>`;
 }
 
 function switchTab(tab) {
