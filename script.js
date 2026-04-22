@@ -352,6 +352,10 @@ const downArrow = '▼';
 const LS_TAB_KEY = 'moonbags.currentTab';
 const LS_SORT_KEY = 'moonbags.currentSortCriterion';
 const LS_SORT_DIR_KEY = 'moonbags.sortDirections';
+const ROI_SINCE_LABELS = {
+    existing: 'ROI Since (12.5.23)',
+    new: 'ROI Since (04.12.24)',
+};
 
 let isRoiSinceDescending = true;
 let isMoonCaseRoiDescending = true;
@@ -429,11 +433,7 @@ function toggleCurrentMarketCapSorting() {
 function updateCarrotSymbol() {
     // Set the text content for roiSinceHeader based on the current tab
     const roiSinceHeader = document.getElementById('roiSinceHeader');
-    if (currentTab === 'existing') {
-        roiSinceHeader.textContent = 'ROI Since (12.5.23)';
-    } else if (currentTab === 'new') {
-        roiSinceHeader.textContent = 'ROI Since (4.12.24)';
-    }
+    roiSinceHeader.textContent = ROI_SINCE_LABELS[currentTab] || ROI_SINCE_LABELS.existing;
 
     document.getElementById('moonCaseRoiHeader').innerHTML = 'Moon Case ROI';
     document.getElementById('baseCaseRoiHeader').innerHTML = 'Base Case ROI';
@@ -780,7 +780,7 @@ function switchTab(tab) {
 
     // Update the roiSinceHeader text based on the current tab
     if (tab === 'existing') {
-        document.getElementById('roiSinceHeader').textContent = 'ROI Since (12.5.23)';
+        document.getElementById('roiSinceHeader').textContent = ROI_SINCE_LABELS.existing;
         document.getElementById('homeParagraph').innerHTML = `
             <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions by <a id="website-link" href="https://www.youtube.com/watch?v=iMkuHYJGlzk" target="_blank">Token Metrics.</a> This is not financial advice from me or Token Metrics, just an easy way for me to keep track of these coins. Started Dec 5, 2023.
             <span class="tooltip">
@@ -788,7 +788,7 @@ function switchTab(tab) {
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
             </span></span>`;
     } else if (tab === 'new') {
-        document.getElementById('roiSinceHeader').textContent = 'ROI Since (04.12.24)';
+        document.getElementById('roiSinceHeader').textContent = ROI_SINCE_LABELS.new;
         document.getElementById('homeParagraph').innerHTML = `
             <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions by <a id="website-link" href="https://www.youtube.com/watch?v=QuRv8uVCnhY" target="_blank">Token Metrics.</a> This is not financial advice from me or Token Metrics, just an easy way for me to keep track of these coins. Started April 12, 2024.
             <span class="tooltip">
