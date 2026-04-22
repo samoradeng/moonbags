@@ -349,6 +349,9 @@ const bitcoinData = {
 
 const upArrow = '▲';
 const downArrow = '▼';
+const LS_TAB_KEY = 'moonbags.currentTab';
+const LS_SORT_KEY = 'moonbags.currentSortCriterion';
+const LS_SORT_DIR_KEY = 'moonbags.sortDirections';
 
 let isRoiSinceDescending = true;
 let isMoonCaseRoiDescending = true;
@@ -358,10 +361,16 @@ let globalApiData = [];
 let currentTab = 'existing';
 let currentSortCriterion = 'roiSince'; // Define this globally to avoid the ReferenceError
 const fetchInterval = 600000; // Set the fetch interval to 10 minutes
+let lastSuccessfulFetchTs = 0;
+let statusTickerInterval = null;
+let cachedApiData = null;
+let lastFetchTs = 0;
+let backoffUntilTs = 0;
 
 document.addEventListener('DOMContentLoaded', function () {
+    loadUserPreferences();
     fetchCryptoData();
-    switchTab('existing');
+    switchTab(currentTab);
 
     document.getElementById('roiSinceHeader').addEventListener('click', function() {
         toggleRoiSinceSorting();
@@ -378,11 +387,17 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('currentMarketCapHeader').addEventListener('click', function() {
         toggleCurrentMarketCapSorting();
     });
+
+    const copyBtn = document.getElementById('copy-watchlist-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copyWatchlistSymbols);
+    }
 });
 
 function toggleRoiSinceSorting() {
     isRoiSinceDescending = !isRoiSinceDescending;
     currentSortCriterion = 'roiSince';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -390,6 +405,7 @@ function toggleRoiSinceSorting() {
 function toggleMoonCaseRoiSorting() {
     isMoonCaseRoiDescending = !isMoonCaseRoiDescending;
     currentSortCriterion = 'moonCaseROI';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -397,6 +413,7 @@ function toggleMoonCaseRoiSorting() {
 function toggleBaseCaseRoiSorting() {
     isBaseCaseRoiDescending = !isBaseCaseRoiDescending;
     currentSortCriterion = 'baseCaseROI';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -404,6 +421,7 @@ function toggleBaseCaseRoiSorting() {
 function toggleCurrentMarketCapSorting() {
     isCurrentMarketCapDescending = !isCurrentMarketCapDescending;
     currentSortCriterion = 'currentMarketCap';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -414,7 +432,7 @@ function updateCarrotSymbol() {
     if (currentTab === 'existing') {
         roiSinceHeader.textContent = 'ROI Since (12.5.23)';
     } else if (currentTab === 'new') {
-        roiSinceHeader.textContent = 'ROI Since (4.12.23)';
+        roiSinceHeader.textContent = 'ROI Since (4.12.24)';
     }
 
     document.getElementById('moonCaseRoiHeader').innerHTML = 'Moon Case ROI';
@@ -446,14 +464,142 @@ function updateCarrotSymbol() {
 
 
 function fetchCryptoData() {
-    const ids = cryptoData.map(coin => coin.name).concat(newCryptoData.map(coin => coin.name)).concat(bitcoinData.name).join(',');
-    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
-        .then(response => response.json())
-        .then(apiData => {
-            globalApiData = apiData;
+    const now = Date.now();
+    const minRefreshGapMs = 30000;
+    const hasFreshCache = cachedApiData && (now - lastFetchTs) < minRefreshGapMs;
+
+    if (hasFreshCache) {
+        globalApiData = cachedApiData;
+        processApiData();
+        setStatus(`Using cached data · updated ${formatDataAge(lastSuccessfulFetchTs)} ago`, 'success');
+        return;
+    }
+
+    if (now < backoffUntilTs) {
+        if (cachedApiData) {
+            globalApiData = cachedApiData;
             processApiData();
+        }
+        setStatus(`Rate limited. Retrying in ${Math.ceil((backoffUntilTs - now) / 1000)}s`, 'error');
+        return;
+    }
+
+    setStatus('Refreshing prices…', 'loading');
+    const ids = cryptoData.map(coin => coin.name).concat(newCryptoData.map(coin => coin.name)).concat(bitcoinData.name).join(',');
+    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&sparkline=true`)
+        .then(async response => {
+            if (!response.ok) {
+                const body = await response.text();
+                if (response.status === 429) {
+                    backoffUntilTs = Date.now() + 60000;
+                }
+                throw new Error(`CoinGecko request failed (${response.status}): ${body}`);
+            }
+            return response.json();
         })
-        .catch(error => console.error('Error fetching data:', error));
+        .then(apiData => {
+            if (!Array.isArray(apiData)) {
+                throw new Error('CoinGecko response was not an array. The API may be rate limiting this request.');
+            }
+            globalApiData = apiData;
+            cachedApiData = apiData;
+            lastFetchTs = Date.now();
+            lastSuccessfulFetchTs = lastFetchTs;
+            backoffUntilTs = 0;
+            processApiData();
+            startStatusTicker();
+            setStatus('Live data · updated just now', 'success');
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            if (cachedApiData) {
+                globalApiData = cachedApiData;
+            }
+            setStatus('Unable to refresh live prices right now. Showing the latest available values.', 'error');
+            processApiData();
+        });
+}
+
+function setStatus(message, type = 'loading') {
+    const statusBanner = document.getElementById('status-banner');
+    if (!statusBanner) return;
+
+    statusBanner.textContent = message;
+    statusBanner.classList.remove('status-loading', 'status-error', 'status-success');
+    statusBanner.classList.add(`status-${type}`);
+}
+
+function formatDataAge(timestamp) {
+    if (!timestamp) return 'unknown';
+    const diffSec = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+    if (diffSec < 60) return `${diffSec}s`;
+    const min = Math.floor(diffSec / 60);
+    if (min < 60) return `${min}m`;
+    return `${Math.floor(min / 60)}h ${min % 60}m`;
+}
+
+function startStatusTicker() {
+    if (statusTickerInterval) return;
+    statusTickerInterval = setInterval(() => {
+        if (!lastSuccessfulFetchTs) return;
+        setStatus(`Live data · updated ${formatDataAge(lastSuccessfulFetchTs)} ago`, 'success');
+    }, 10000);
+}
+
+function loadUserPreferences() {
+    try {
+        const savedTab = localStorage.getItem(LS_TAB_KEY);
+        const savedSort = localStorage.getItem(LS_SORT_KEY);
+        const savedDirections = JSON.parse(localStorage.getItem(LS_SORT_DIR_KEY) || '{}');
+
+        if (savedTab === 'existing' || savedTab === 'new') currentTab = savedTab;
+        if (savedSort) currentSortCriterion = savedSort;
+        if (typeof savedDirections.roiSince === 'boolean') isRoiSinceDescending = savedDirections.roiSince;
+        if (typeof savedDirections.moonCase === 'boolean') isMoonCaseRoiDescending = savedDirections.moonCase;
+        if (typeof savedDirections.baseCase === 'boolean') isBaseCaseRoiDescending = savedDirections.baseCase;
+        if (typeof savedDirections.marketCap === 'boolean') isCurrentMarketCapDescending = savedDirections.marketCap;
+    } catch (error) {
+        console.warn('Could not load preferences:', error);
+    }
+}
+
+function persistUserPreferences() {
+    try {
+        localStorage.setItem(LS_TAB_KEY, currentTab);
+        localStorage.setItem(LS_SORT_KEY, currentSortCriterion);
+        localStorage.setItem(LS_SORT_DIR_KEY, JSON.stringify({
+            roiSince: isRoiSinceDescending,
+            moonCase: isMoonCaseRoiDescending,
+            baseCase: isBaseCaseRoiDescending,
+            marketCap: isCurrentMarketCapDescending,
+        }));
+    } catch (error) {
+        console.warn('Could not persist preferences:', error);
+    }
+}
+
+function copyWatchlistSymbols() {
+    const dataSet = currentTab === 'existing' ? cryptoData : newCryptoData;
+    const symbols = dataSet.map(coin => normalizeSymbol(coin.symbol)).join(', ');
+    if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(symbols)
+            .then(() => setStatus('Watchlist symbols copied to clipboard.', 'success'))
+            .catch(() => setStatus('Could not copy automatically. Please copy manually.', 'error'));
+    } else {
+        setStatus('Clipboard API unavailable in this browser.', 'error');
+    }
+}
+
+function normalizeSymbol(symbol) {
+    return String(symbol || '').toLowerCase().replace(/^\$/, '');
+}
+
+function findApiCoinForCrypto(coin) {
+    const normalizedSymbol = normalizeSymbol(coin.symbol);
+    return globalApiData.find(c =>
+        c.id === coin.name ||
+        normalizeSymbol(c.symbol) === normalizedSymbol
+    );
 }
 
 function processApiData() {
@@ -466,7 +612,11 @@ function processApiData() {
 function calculateROI() {
     function processDataSet(dataSet) {
         dataSet.forEach(coin => {
-            const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
+            coin.calculatedBaseROI = 0;
+            coin.calculatedMoonROI = 0;
+            coin.calculatedRoiSince = 0;
+
+            const apiCoin = findApiCoinForCrypto(coin);
             if (apiCoin) {
                 let currentPrice = apiCoin.current_price;
 
@@ -535,58 +685,95 @@ function displaySortedResults() {
     let dataToDisplay = currentTab === 'existing' ? cryptoData : newCryptoData;
 
     dataToDisplay.sort((a, b) => {
+        const baseA = Number.isFinite(a.calculatedBaseROI) ? a.calculatedBaseROI : 0;
+        const baseB = Number.isFinite(b.calculatedBaseROI) ? b.calculatedBaseROI : 0;
+        const moonA = Number.isFinite(a.calculatedMoonROI) ? a.calculatedMoonROI : 0;
+        const moonB = Number.isFinite(b.calculatedMoonROI) ? b.calculatedMoonROI : 0;
+        const roiSinceA = Number.isFinite(a.calculatedRoiSince) ? a.calculatedRoiSince : 0;
+        const roiSinceB = Number.isFinite(b.calculatedRoiSince) ? b.calculatedRoiSince : 0;
+
         let sortValue = 0;
         if (currentSortCriterion === 'baseCaseROI') {
-            sortValue = isBaseCaseRoiDescending ? b.calculatedBaseROI - a.calculatedBaseROI : a.calculatedBaseROI - b.calculatedBaseROI;
+            sortValue = isBaseCaseRoiDescending ? baseB - baseA : baseA - baseB;
         } else if (currentSortCriterion === 'moonCaseROI') {
-            sortValue = isMoonCaseRoiDescending ? b.calculatedMoonROI - a.calculatedMoonROI : a.calculatedMoonROI - b.calculatedMoonROI;
+            sortValue = isMoonCaseRoiDescending ? moonB - moonA : moonA - moonB;
         } else if (currentSortCriterion === 'roiSince') {
-            sortValue = isRoiSinceDescending ? b.calculatedRoiSince - a.calculatedRoiSince : a.calculatedRoiSince - b.calculatedRoiSince;
+            sortValue = isRoiSinceDescending ? roiSinceB - roiSinceA : roiSinceA - roiSinceB;
         } else if (currentSortCriterion === 'currentMarketCap') {
-            const marketCapA = globalApiData.find(c => c.symbol === a.symbol.toLowerCase())?.market_cap || 0;
-            const marketCapB = globalApiData.find(c => c.symbol === b.symbol.toLowerCase())?.market_cap || 0;
+            const marketCapA = findApiCoinForCrypto(a)?.market_cap || 0;
+            const marketCapB = findApiCoinForCrypto(b)?.market_cap || 0;
             sortValue = isCurrentMarketCapDescending ? marketCapB - marketCapA : marketCapA - marketCapB;
         }
         return sortValue;
     });
 
     dataToDisplay.forEach((coin, index) => {
-        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
-        if (apiCoin) {
-            displayResult(apiCoin, coin, index + 1);
-        }
+        const apiCoin = findApiCoinForCrypto(coin);
+        displayResult(apiCoin, coin, index + 1);
     });
+
+    if (tableBodyFixed.children.length === 0) {
+        tableBodyFixed.innerHTML = '<tr><td>-</td><td>No coins available right now</td></tr>';
+        tableBodyScroll.innerHTML = '<tr><td colspan="7">Please try again in a moment.</td></tr>';
+    }
 }
 
 function displayResult(coin, crypto, rank) {
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
     const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
 
-    const currentPrice = coin.current_price;
-    const roiToDate = crypto.calculatedRoiSince;
+    const currentPrice = coin?.current_price || 0;
+    const roiToDate = Number.isFinite(crypto.calculatedRoiSince) ? crypto.calculatedRoiSince : 0;
 
     let roiSymbol = roiToDate >= 0 ? upArrow : downArrow;
     let roiClass = roiToDate >= 0 ? 'positive-roi' : 'negative-roi';
+    const marketCapLabel = coin?.market_cap ? `$${coin.market_cap.toLocaleString()}` : 'N/A';
+    const imageUrl = coin?.image || '/images/Caution-Grey.svg';
+    const displayName = coin?.name || crypto.name;
+    const coinLink = coin?.id ? `https://www.coingecko.com/en/coins/${coin.id}` : '#';
+    const baseRoiLabel = Number.isFinite(crypto.calculatedBaseROI) ? `${Math.round(crypto.calculatedBaseROI)}x` : 'N/A';
+    const moonRoiLabel = Number.isFinite(crypto.calculatedMoonROI) ? `${Math.round(crypto.calculatedMoonROI)}x` : 'N/A';
+    const sparklineSvg = createSparklineSvg(coin?.sparkline_in_7d?.price || []);
 
     const rowFixed = document.createElement('tr');
-    rowFixed.innerHTML = `<td>${rank}</td><td><img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">${coin.name}</td>`;
+    rowFixed.innerHTML = `<td>${rank}</td><td><a class="coin-link" href="${coinLink}" target="_blank" rel="noopener noreferrer"><img src="${imageUrl}" alt="${displayName}" style="width: 24px; height: 24px;">${displayName}</a></td>`;
     tableBodyFixed.appendChild(rowFixed);
 
     const rowScroll = document.createElement('tr');
     const isContentBlurred = rank <= 5 && !hasUserPaid();
     rowScroll.innerHTML = `
-        <td class="${isContentBlurred ? 'blur-content' : ''}">$${coin.market_cap.toLocaleString()}</td>
+        <td class="${isContentBlurred ? 'blur-content' : ''}">${marketCapLabel}</td>
+        <td>${sparklineSvg}</td>
         <td>$${crypto.baseCaseMcap} (${crypto.baseRank})</td>
-        <td>${Math.round(crypto.calculatedBaseROI)}x</td>
+        <td>${baseRoiLabel}</td>
         <td>$${crypto.moonCaseMcap} (${crypto.moonRank})</td>
-        <td>${Math.round(crypto.calculatedMoonROI)}x</td>
+        <td>${moonRoiLabel}</td>
         <td class="${roiClass}">${roiSymbol} ${(Math.abs(roiToDate) * 100).toFixed(1)}%</td>
     `;
     tableBodyScroll.appendChild(rowScroll);
 }
 
+function createSparklineSvg(points) {
+    if (!Array.isArray(points) || points.length < 2) return 'N/A';
+
+    const width = 84;
+    const height = 24;
+    const min = Math.min(...points);
+    const max = Math.max(...points);
+    const range = max - min || 1;
+    const path = points.map((value, i) => {
+        const x = (i / (points.length - 1)) * width;
+        const y = height - ((value - min) / range) * height;
+        return `${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
+    }).join(' ');
+    const trendColor = points[points.length - 1] >= points[0] ? '#0b8043' : '#b00020';
+
+    return `<svg class="sparkline" viewBox="0 0 ${width} ${height}" aria-label="7 day trend"><path d="${path}" fill="none" stroke="${trendColor}" stroke-width="2"/></svg>`;
+}
+
 function switchTab(tab) {
     currentTab = tab;
+    persistUserPreferences();
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(t => t.classList.remove('active-tab'));
     document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active-tab');
@@ -599,7 +786,7 @@ function switchTab(tab) {
             <span class="tooltip">
                 <img id="caution" src="/images/Caution-Grey.svg" alt="Caution">
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
-            </span>`;
+            </span></span>`;
     } else if (tab === 'new') {
         document.getElementById('roiSinceHeader').textContent = 'ROI Since (04.12.24)';
         document.getElementById('homeParagraph').innerHTML = `
@@ -607,7 +794,7 @@ function switchTab(tab) {
             <span class="tooltip">
                 <img id="caution" src="/images/Caution-Grey.svg" alt="Caution">
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
-            </span>`;
+            </span></span>`;
     }
 
     displaySortedResults();
@@ -634,7 +821,7 @@ function calculateAverageROI() {
     const bitcoinROI = bitcoinCurrentPrice && bitcoinInitialPrice ? ((bitcoinCurrentPrice - bitcoinInitialPrice) / bitcoinInitialPrice) : 0;
 
     const totalROI = dataSet.reduce((acc, coin) => {
-        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
+        const apiCoin = findApiCoinForCrypto(coin);
         const currentPrice = apiCoin ? apiCoin.current_price : 0;
         const initialPrice = parseFloat(coin.initialPrice);
         const currentROI = initialPrice && currentPrice ? ((currentPrice - initialPrice) / initialPrice) : 0;
@@ -647,6 +834,9 @@ function calculateAverageROI() {
 
 function displayROISummary(averageROI, bitcoinROI, numberOfCoins) {
     const roiSummaryElement = document.getElementById('roi-summary');
+    if (!roiSummaryElement) {
+        return;
+    }
     const averageROISymbol = averageROI >= 0 ? upArrow : downArrow;
     const bitcoinROISymbol = bitcoinROI >= 0 ? upArrow : downArrow;
     const averageROIClass = averageROI >= 0 ? 'positive-roi' : 'negative-roi';
