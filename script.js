@@ -414,7 +414,7 @@ function updateCarrotSymbol() {
     if (currentTab === 'existing') {
         roiSinceHeader.textContent = 'ROI Since (12.5.23)';
     } else if (currentTab === 'new') {
-        roiSinceHeader.textContent = 'ROI Since (4.12.23)';
+        roiSinceHeader.textContent = 'ROI Since (4.12.24)';
     }
 
     document.getElementById('moonCaseRoiHeader').innerHTML = 'Moon Case ROI';
@@ -448,12 +448,33 @@ function updateCarrotSymbol() {
 function fetchCryptoData() {
     const ids = cryptoData.map(coin => coin.name).concat(newCryptoData.map(coin => coin.name)).concat(bitcoinData.name).join(',');
     fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
-        .then(response => response.json())
+        .then(async response => {
+            if (!response.ok) {
+                const body = await response.text();
+                throw new Error(`CoinGecko request failed (${response.status}): ${body}`);
+            }
+            return response.json();
+        })
         .then(apiData => {
+            if (!Array.isArray(apiData)) {
+                throw new Error('CoinGecko response was not an array. The API may be rate limiting this request.');
+            }
             globalApiData = apiData;
             processApiData();
         })
         .catch(error => console.error('Error fetching data:', error));
+}
+
+function normalizeSymbol(symbol) {
+    return String(symbol || '').toLowerCase().replace(/^\$/, '');
+}
+
+function findApiCoinForCrypto(coin) {
+    const normalizedSymbol = normalizeSymbol(coin.symbol);
+    return globalApiData.find(c =>
+        c.id === coin.name ||
+        normalizeSymbol(c.symbol) === normalizedSymbol
+    );
 }
 
 function processApiData() {
@@ -466,7 +487,11 @@ function processApiData() {
 function calculateROI() {
     function processDataSet(dataSet) {
         dataSet.forEach(coin => {
-            const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
+            coin.calculatedBaseROI = 0;
+            coin.calculatedMoonROI = 0;
+            coin.calculatedRoiSince = 0;
+
+            const apiCoin = findApiCoinForCrypto(coin);
             if (apiCoin) {
                 let currentPrice = apiCoin.current_price;
 
@@ -535,26 +560,31 @@ function displaySortedResults() {
     let dataToDisplay = currentTab === 'existing' ? cryptoData : newCryptoData;
 
     dataToDisplay.sort((a, b) => {
+        const baseA = Number.isFinite(a.calculatedBaseROI) ? a.calculatedBaseROI : 0;
+        const baseB = Number.isFinite(b.calculatedBaseROI) ? b.calculatedBaseROI : 0;
+        const moonA = Number.isFinite(a.calculatedMoonROI) ? a.calculatedMoonROI : 0;
+        const moonB = Number.isFinite(b.calculatedMoonROI) ? b.calculatedMoonROI : 0;
+        const roiSinceA = Number.isFinite(a.calculatedRoiSince) ? a.calculatedRoiSince : 0;
+        const roiSinceB = Number.isFinite(b.calculatedRoiSince) ? b.calculatedRoiSince : 0;
+
         let sortValue = 0;
         if (currentSortCriterion === 'baseCaseROI') {
-            sortValue = isBaseCaseRoiDescending ? b.calculatedBaseROI - a.calculatedBaseROI : a.calculatedBaseROI - b.calculatedBaseROI;
+            sortValue = isBaseCaseRoiDescending ? baseB - baseA : baseA - baseB;
         } else if (currentSortCriterion === 'moonCaseROI') {
-            sortValue = isMoonCaseRoiDescending ? b.calculatedMoonROI - a.calculatedMoonROI : a.calculatedMoonROI - b.calculatedMoonROI;
+            sortValue = isMoonCaseRoiDescending ? moonB - moonA : moonA - moonB;
         } else if (currentSortCriterion === 'roiSince') {
-            sortValue = isRoiSinceDescending ? b.calculatedRoiSince - a.calculatedRoiSince : a.calculatedRoiSince - b.calculatedRoiSince;
+            sortValue = isRoiSinceDescending ? roiSinceB - roiSinceA : roiSinceA - roiSinceB;
         } else if (currentSortCriterion === 'currentMarketCap') {
-            const marketCapA = globalApiData.find(c => c.symbol === a.symbol.toLowerCase())?.market_cap || 0;
-            const marketCapB = globalApiData.find(c => c.symbol === b.symbol.toLowerCase())?.market_cap || 0;
+            const marketCapA = findApiCoinForCrypto(a)?.market_cap || 0;
+            const marketCapB = findApiCoinForCrypto(b)?.market_cap || 0;
             sortValue = isCurrentMarketCapDescending ? marketCapB - marketCapA : marketCapA - marketCapB;
         }
         return sortValue;
     });
 
     dataToDisplay.forEach((coin, index) => {
-        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
-        if (apiCoin) {
-            displayResult(apiCoin, coin, index + 1);
-        }
+        const apiCoin = findApiCoinForCrypto(coin);
+        displayResult(apiCoin, coin, index + 1);
     });
 }
 
@@ -562,24 +592,29 @@ function displayResult(coin, crypto, rank) {
     const tableBodyFixed = document.getElementById('crypto-table-body-fixed');
     const tableBodyScroll = document.getElementById('crypto-table-body-scroll');
 
-    const currentPrice = coin.current_price;
-    const roiToDate = crypto.calculatedRoiSince;
+    const currentPrice = coin?.current_price || 0;
+    const roiToDate = Number.isFinite(crypto.calculatedRoiSince) ? crypto.calculatedRoiSince : 0;
 
     let roiSymbol = roiToDate >= 0 ? upArrow : downArrow;
     let roiClass = roiToDate >= 0 ? 'positive-roi' : 'negative-roi';
+    const marketCapLabel = coin?.market_cap ? `$${coin.market_cap.toLocaleString()}` : 'N/A';
+    const imageUrl = coin?.image || '/images/Caution-Grey.svg';
+    const displayName = coin?.name || crypto.name;
+    const baseRoiLabel = Number.isFinite(crypto.calculatedBaseROI) ? `${Math.round(crypto.calculatedBaseROI)}x` : 'N/A';
+    const moonRoiLabel = Number.isFinite(crypto.calculatedMoonROI) ? `${Math.round(crypto.calculatedMoonROI)}x` : 'N/A';
 
     const rowFixed = document.createElement('tr');
-    rowFixed.innerHTML = `<td>${rank}</td><td><img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">${coin.name}</td>`;
+    rowFixed.innerHTML = `<td>${rank}</td><td><img src="${imageUrl}" alt="${displayName}" style="width: 24px; height: 24px;">${displayName}</td>`;
     tableBodyFixed.appendChild(rowFixed);
 
     const rowScroll = document.createElement('tr');
     const isContentBlurred = rank <= 5 && !hasUserPaid();
     rowScroll.innerHTML = `
-        <td class="${isContentBlurred ? 'blur-content' : ''}">$${coin.market_cap.toLocaleString()}</td>
+        <td class="${isContentBlurred ? 'blur-content' : ''}">${marketCapLabel}</td>
         <td>$${crypto.baseCaseMcap} (${crypto.baseRank})</td>
-        <td>${Math.round(crypto.calculatedBaseROI)}x</td>
+        <td>${baseRoiLabel}</td>
         <td>$${crypto.moonCaseMcap} (${crypto.moonRank})</td>
-        <td>${Math.round(crypto.calculatedMoonROI)}x</td>
+        <td>${moonRoiLabel}</td>
         <td class="${roiClass}">${roiSymbol} ${(Math.abs(roiToDate) * 100).toFixed(1)}%</td>
     `;
     tableBodyScroll.appendChild(rowScroll);
@@ -599,7 +634,7 @@ function switchTab(tab) {
             <span class="tooltip">
                 <img id="caution" src="/images/Caution-Grey.svg" alt="Caution">
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
-            </span>`;
+            </span></span>`;
     } else if (tab === 'new') {
         document.getElementById('roiSinceHeader').textContent = 'ROI Since (04.12.24)';
         document.getElementById('homeParagraph').innerHTML = `
@@ -607,7 +642,7 @@ function switchTab(tab) {
             <span class="tooltip">
                 <img id="caution" src="/images/Caution-Grey.svg" alt="Caution">
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
-            </span>`;
+            </span></span>`;
     }
 
     displaySortedResults();
@@ -634,7 +669,7 @@ function calculateAverageROI() {
     const bitcoinROI = bitcoinCurrentPrice && bitcoinInitialPrice ? ((bitcoinCurrentPrice - bitcoinInitialPrice) / bitcoinInitialPrice) : 0;
 
     const totalROI = dataSet.reduce((acc, coin) => {
-        const apiCoin = globalApiData.find(c => c.symbol === coin.symbol.toLowerCase());
+        const apiCoin = findApiCoinForCrypto(coin);
         const currentPrice = apiCoin ? apiCoin.current_price : 0;
         const initialPrice = parseFloat(coin.initialPrice);
         const currentROI = initialPrice && currentPrice ? ((currentPrice - initialPrice) / initialPrice) : 0;
@@ -647,6 +682,9 @@ function calculateAverageROI() {
 
 function displayROISummary(averageROI, bitcoinROI, numberOfCoins) {
     const roiSummaryElement = document.getElementById('roi-summary');
+    if (!roiSummaryElement) {
+        return;
+    }
     const averageROISymbol = averageROI >= 0 ? upArrow : downArrow;
     const bitcoinROISymbol = bitcoinROI >= 0 ? upArrow : downArrow;
     const averageROIClass = averageROI >= 0 ? 'positive-roi' : 'negative-roi';
