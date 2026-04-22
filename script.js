@@ -349,6 +349,13 @@ const bitcoinData = {
 
 const upArrow = '▲';
 const downArrow = '▼';
+const LS_TAB_KEY = 'moonbags.currentTab';
+const LS_SORT_KEY = 'moonbags.currentSortCriterion';
+const LS_SORT_DIR_KEY = 'moonbags.sortDirections';
+const ROI_SINCE_LABELS = {
+    existing: 'ROI Since (12.5.23)',
+    new: 'ROI Since (04.12.24)',
+};
 
 let isRoiSinceDescending = true;
 let isMoonCaseRoiDescending = true;
@@ -358,10 +365,16 @@ let globalApiData = [];
 let currentTab = 'existing';
 let currentSortCriterion = 'roiSince'; // Define this globally to avoid the ReferenceError
 const fetchInterval = 600000; // Set the fetch interval to 10 minutes
+let lastSuccessfulFetchTs = 0;
+let statusTickerInterval = null;
+let cachedApiData = null;
+let lastFetchTs = 0;
+let backoffUntilTs = 0;
 
 document.addEventListener('DOMContentLoaded', function () {
+    loadUserPreferences();
     fetchCryptoData();
-    switchTab('existing');
+    switchTab(currentTab);
 
     document.getElementById('roiSinceHeader').addEventListener('click', function() {
         toggleRoiSinceSorting();
@@ -378,11 +391,17 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('currentMarketCapHeader').addEventListener('click', function() {
         toggleCurrentMarketCapSorting();
     });
+
+    const copyBtn = document.getElementById('copy-watchlist-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copyWatchlistSymbols);
+    }
 });
 
 function toggleRoiSinceSorting() {
     isRoiSinceDescending = !isRoiSinceDescending;
     currentSortCriterion = 'roiSince';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -390,6 +409,7 @@ function toggleRoiSinceSorting() {
 function toggleMoonCaseRoiSorting() {
     isMoonCaseRoiDescending = !isMoonCaseRoiDescending;
     currentSortCriterion = 'moonCaseROI';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -397,6 +417,7 @@ function toggleMoonCaseRoiSorting() {
 function toggleBaseCaseRoiSorting() {
     isBaseCaseRoiDescending = !isBaseCaseRoiDescending;
     currentSortCriterion = 'baseCaseROI';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -404,6 +425,7 @@ function toggleBaseCaseRoiSorting() {
 function toggleCurrentMarketCapSorting() {
     isCurrentMarketCapDescending = !isCurrentMarketCapDescending;
     currentSortCriterion = 'currentMarketCap';
+    persistUserPreferences();
     updateCarrotSymbol();
     displaySortedResults();
 }
@@ -411,11 +433,7 @@ function toggleCurrentMarketCapSorting() {
 function updateCarrotSymbol() {
     // Set the text content for roiSinceHeader based on the current tab
     const roiSinceHeader = document.getElementById('roiSinceHeader');
-    if (currentTab === 'existing') {
-        roiSinceHeader.textContent = 'ROI Since (12.5.23)';
-    } else if (currentTab === 'new') {
-        roiSinceHeader.textContent = 'ROI Since (4.12.24)';
-    }
+    roiSinceHeader.textContent = ROI_SINCE_LABELS[currentTab] || ROI_SINCE_LABELS.existing;
 
     document.getElementById('moonCaseRoiHeader').innerHTML = 'Moon Case ROI';
     document.getElementById('baseCaseRoiHeader').innerHTML = 'Base Case ROI';
@@ -446,11 +464,35 @@ function updateCarrotSymbol() {
 
 
 function fetchCryptoData() {
+    const now = Date.now();
+    const minRefreshGapMs = 30000;
+    const hasFreshCache = cachedApiData && (now - lastFetchTs) < minRefreshGapMs;
+
+    if (hasFreshCache) {
+        globalApiData = cachedApiData;
+        processApiData();
+        setStatus(`Using cached data · updated ${formatDataAge(lastSuccessfulFetchTs)} ago`, 'success');
+        return;
+    }
+
+    if (now < backoffUntilTs) {
+        if (cachedApiData) {
+            globalApiData = cachedApiData;
+            processApiData();
+        }
+        setStatus(`Rate limited. Retrying in ${Math.ceil((backoffUntilTs - now) / 1000)}s`, 'error');
+        return;
+    }
+
+    setStatus('Refreshing prices…', 'loading');
     const ids = cryptoData.map(coin => coin.name).concat(newCryptoData.map(coin => coin.name)).concat(bitcoinData.name).join(',');
-    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`)
+    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&sparkline=true`)
         .then(async response => {
             if (!response.ok) {
                 const body = await response.text();
+                if (response.status === 429) {
+                    backoffUntilTs = Date.now() + 60000;
+                }
                 throw new Error(`CoinGecko request failed (${response.status}): ${body}`);
             }
             return response.json();
@@ -460,9 +502,92 @@ function fetchCryptoData() {
                 throw new Error('CoinGecko response was not an array. The API may be rate limiting this request.');
             }
             globalApiData = apiData;
+            cachedApiData = apiData;
+            lastFetchTs = Date.now();
+            lastSuccessfulFetchTs = lastFetchTs;
+            backoffUntilTs = 0;
             processApiData();
+            startStatusTicker();
+            setStatus('Live data · updated just now', 'success');
         })
-        .catch(error => console.error('Error fetching data:', error));
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            if (cachedApiData) {
+                globalApiData = cachedApiData;
+            }
+            setStatus('Unable to refresh live prices right now. Showing the latest available values.', 'error');
+            processApiData();
+        });
+}
+
+function setStatus(message, type = 'loading') {
+    const statusBanner = document.getElementById('status-banner');
+    if (!statusBanner) return;
+
+    statusBanner.textContent = message;
+    statusBanner.classList.remove('status-loading', 'status-error', 'status-success');
+    statusBanner.classList.add(`status-${type}`);
+}
+
+function formatDataAge(timestamp) {
+    if (!timestamp) return 'unknown';
+    const diffSec = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+    if (diffSec < 60) return `${diffSec}s`;
+    const min = Math.floor(diffSec / 60);
+    if (min < 60) return `${min}m`;
+    return `${Math.floor(min / 60)}h ${min % 60}m`;
+}
+
+function startStatusTicker() {
+    if (statusTickerInterval) return;
+    statusTickerInterval = setInterval(() => {
+        if (!lastSuccessfulFetchTs) return;
+        setStatus(`Live data · updated ${formatDataAge(lastSuccessfulFetchTs)} ago`, 'success');
+    }, 10000);
+}
+
+function loadUserPreferences() {
+    try {
+        const savedTab = localStorage.getItem(LS_TAB_KEY);
+        const savedSort = localStorage.getItem(LS_SORT_KEY);
+        const savedDirections = JSON.parse(localStorage.getItem(LS_SORT_DIR_KEY) || '{}');
+
+        if (savedTab === 'existing' || savedTab === 'new') currentTab = savedTab;
+        if (savedSort) currentSortCriterion = savedSort;
+        if (typeof savedDirections.roiSince === 'boolean') isRoiSinceDescending = savedDirections.roiSince;
+        if (typeof savedDirections.moonCase === 'boolean') isMoonCaseRoiDescending = savedDirections.moonCase;
+        if (typeof savedDirections.baseCase === 'boolean') isBaseCaseRoiDescending = savedDirections.baseCase;
+        if (typeof savedDirections.marketCap === 'boolean') isCurrentMarketCapDescending = savedDirections.marketCap;
+    } catch (error) {
+        console.warn('Could not load preferences:', error);
+    }
+}
+
+function persistUserPreferences() {
+    try {
+        localStorage.setItem(LS_TAB_KEY, currentTab);
+        localStorage.setItem(LS_SORT_KEY, currentSortCriterion);
+        localStorage.setItem(LS_SORT_DIR_KEY, JSON.stringify({
+            roiSince: isRoiSinceDescending,
+            moonCase: isMoonCaseRoiDescending,
+            baseCase: isBaseCaseRoiDescending,
+            marketCap: isCurrentMarketCapDescending,
+        }));
+    } catch (error) {
+        console.warn('Could not persist preferences:', error);
+    }
+}
+
+function copyWatchlistSymbols() {
+    const dataSet = currentTab === 'existing' ? cryptoData : newCryptoData;
+    const symbols = dataSet.map(coin => normalizeSymbol(coin.symbol)).join(', ');
+    if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(symbols)
+            .then(() => setStatus('Watchlist symbols copied to clipboard.', 'success'))
+            .catch(() => setStatus('Could not copy automatically. Please copy manually.', 'error'));
+    } else {
+        setStatus('Clipboard API unavailable in this browser.', 'error');
+    }
 }
 
 function normalizeSymbol(symbol) {
@@ -586,6 +711,11 @@ function displaySortedResults() {
         const apiCoin = findApiCoinForCrypto(coin);
         displayResult(apiCoin, coin, index + 1);
     });
+
+    if (tableBodyFixed.children.length === 0) {
+        tableBodyFixed.innerHTML = '<tr><td>-</td><td>No coins available right now</td></tr>';
+        tableBodyScroll.innerHTML = '<tr><td colspan="7">Please try again in a moment.</td></tr>';
+    }
 }
 
 function displayResult(coin, crypto, rank) {
@@ -600,17 +730,20 @@ function displayResult(coin, crypto, rank) {
     const marketCapLabel = coin?.market_cap ? `$${coin.market_cap.toLocaleString()}` : 'N/A';
     const imageUrl = coin?.image || '/images/Caution-Grey.svg';
     const displayName = coin?.name || crypto.name;
+    const coinLink = coin?.id ? `https://www.coingecko.com/en/coins/${coin.id}` : '#';
     const baseRoiLabel = Number.isFinite(crypto.calculatedBaseROI) ? `${Math.round(crypto.calculatedBaseROI)}x` : 'N/A';
     const moonRoiLabel = Number.isFinite(crypto.calculatedMoonROI) ? `${Math.round(crypto.calculatedMoonROI)}x` : 'N/A';
+    const sparklineSvg = createSparklineSvg(coin?.sparkline_in_7d?.price || []);
 
     const rowFixed = document.createElement('tr');
-    rowFixed.innerHTML = `<td>${rank}</td><td><img src="${imageUrl}" alt="${displayName}" style="width: 24px; height: 24px;">${displayName}</td>`;
+    rowFixed.innerHTML = `<td>${rank}</td><td><a class="coin-link" href="${coinLink}" target="_blank" rel="noopener noreferrer"><img src="${imageUrl}" alt="${displayName}" style="width: 24px; height: 24px;">${displayName}</a></td>`;
     tableBodyFixed.appendChild(rowFixed);
 
     const rowScroll = document.createElement('tr');
     const isContentBlurred = rank <= 5 && !hasUserPaid();
     rowScroll.innerHTML = `
         <td class="${isContentBlurred ? 'blur-content' : ''}">${marketCapLabel}</td>
+        <td>${sparklineSvg}</td>
         <td>$${crypto.baseCaseMcap} (${crypto.baseRank})</td>
         <td>${baseRoiLabel}</td>
         <td>$${crypto.moonCaseMcap} (${crypto.moonRank})</td>
@@ -620,15 +753,34 @@ function displayResult(coin, crypto, rank) {
     tableBodyScroll.appendChild(rowScroll);
 }
 
+function createSparklineSvg(points) {
+    if (!Array.isArray(points) || points.length < 2) return 'N/A';
+
+    const width = 84;
+    const height = 24;
+    const min = Math.min(...points);
+    const max = Math.max(...points);
+    const range = max - min || 1;
+    const path = points.map((value, i) => {
+        const x = (i / (points.length - 1)) * width;
+        const y = height - ((value - min) / range) * height;
+        return `${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
+    }).join(' ');
+    const trendColor = points[points.length - 1] >= points[0] ? '#0b8043' : '#b00020';
+
+    return `<svg class="sparkline" viewBox="0 0 ${width} ${height}" aria-label="7 day trend"><path d="${path}" fill="none" stroke="${trendColor}" stroke-width="2"/></svg>`;
+}
+
 function switchTab(tab) {
     currentTab = tab;
+    persistUserPreferences();
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(t => t.classList.remove('active-tab'));
     document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active-tab');
 
     // Update the roiSinceHeader text based on the current tab
     if (tab === 'existing') {
-        document.getElementById('roiSinceHeader').textContent = 'ROI Since (12.5.23)';
+        document.getElementById('roiSinceHeader').textContent = ROI_SINCE_LABELS.existing;
         document.getElementById('homeParagraph').innerHTML = `
             <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions by <a id="website-link" href="https://www.youtube.com/watch?v=iMkuHYJGlzk" target="_blank">Token Metrics.</a> This is not financial advice from me or Token Metrics, just an easy way for me to keep track of these coins. Started Dec 5, 2023.
             <span class="tooltip">
@@ -636,7 +788,7 @@ function switchTab(tab) {
                 <span class="tooltiptext">These coins are high risk, high reward. Most might fail. I try not to put more than 5% of my portfolio in any of these gems. Please do your own research.</span>
             </span></span>`;
     } else if (tab === 'new') {
-        document.getElementById('roiSinceHeader').textContent = 'ROI Since (04.12.24)';
+        document.getElementById('roiSinceHeader').textContent = ROI_SINCE_LABELS.new;
         document.getElementById('homeParagraph').innerHTML = `
             <span>Welcome! <a id="website-link" href="https://www.samoradeng.com/about" target="_blank">I'm a crypto investor</a> looking for hidden gems that can outperform the market. I found these coins and predictions by <a id="website-link" href="https://www.youtube.com/watch?v=QuRv8uVCnhY" target="_blank">Token Metrics.</a> This is not financial advice from me or Token Metrics, just an easy way for me to keep track of these coins. Started April 12, 2024.
             <span class="tooltip">

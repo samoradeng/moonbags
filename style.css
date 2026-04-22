@@ -63,6 +63,61 @@ h1 {
     justify-content:left;
 }
 
+#status-banner {
+    margin: 0 48px 12px 48px;
+    color: #6e6e73;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+#actions-row {
+    margin: 0 48px 8px 48px;
+}
+
+#copy-watchlist-btn {
+    border: 1px solid #d2d2d7;
+    background: #fff;
+    color: #1d1d1f;
+    font-size: 13px;
+    border-radius: 999px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+#copy-watchlist-btn:hover {
+    background: #f4f4f6;
+}
+
+.sparkline {
+    width: 84px;
+    height: 24px;
+    display: block;
+}
+
+.coin-link {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.coin-link:hover {
+    text-decoration: underline;
+}
+
+#status-banner.status-error {
+    color: #b00020;
+}
+
+#status-banner.status-loading {
+    color: #3c4043;
+}
+
+#status-banner.status-success {
+    color: #0b8043;
+}
+
 .tab {
     font-family: "Inter", sans-serif;    
     padding: 10px 20px;
@@ -212,6 +267,14 @@ th {
         margin-right: 0px;
         display: flex;
         justify-content:left;
+    }
+
+    #status-banner {
+        margin: 0 16px 12px 16px;
+    }
+
+    #actions-row {
+        margin: 0 16px 8px 16px;
     }
 
     table {
@@ -518,7 +581,5 @@ a:active{
     margin-left: 4px; /* Space between header text and symbol */
     
 }
-
-
 
 
